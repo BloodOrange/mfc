@@ -12,7 +12,7 @@ use MyApp\Bomberman;
                 new Bomberman()
             )
         ),
-        8080
+        5000
     );
 
     $server->run();

@@ -178,9 +178,11 @@ function applyKey (_event_){
 //appel fonction appliKey lors de l'appuie d'une touche
 document.onkeydown = applyKey;
 //création de la connection
-var conn = new WebSocket('ws://localhost:8080');
+var conn = new WebSocket('ws://mfc.lo:5000');
 conn.onopen = function(e) {
     console.log("Connection established!");
+     var gameState = JSON.parse(e.data);
+     console.log(gameState);
 };
 //action lors de la réception d'un message
 conn.onmessage = function(e) {
@@ -221,7 +223,10 @@ conn.onmessage = function(e) {
 </head>
 <body >
   <div id="boxRouge"></div>
-
+<?php
+$host=gethostbyname("mfc.lo:8080");
+echo $host;
+?>
 
 </body>
 </html>
