@@ -1,0 +1,31 @@
+<html>
+  <head>
+	<title>Massive Chicken Fry</title>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="game.js"></script>
+	<link href="style.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+	<div id="container">
+	  <div id="board">
+		<div id="boardOverlay">
+		  <div id="boardConnection">
+			<div id="boardOverlayMessage">Erreur lors de la connection</div>
+			<button id="connect">Connect...</button>
+		  </div>
+		</div>
+		<canvas id="boardCanvas" width="640" height="640">
+		  Voyez utiliser un vrai navigateur ! Bande de looser !
+		</canvas>
+	  </div>
+	  <div id="connection">
+		<form id="join">
+		  <input id="login" placeholder="Enter your login..." />
+		  <button id="joinButton" disabled="true" type="submit">Join</button>
+		</form>
+	  </div>
+	  <div id="listPlayers">
+	  </div>
+	</div>
+  </body>
+</html>
