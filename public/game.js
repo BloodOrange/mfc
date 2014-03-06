@@ -3,10 +3,6 @@ board = null;
 graphic = null;
 players = new Array();
 
-colorPlayer = [
-	"blue", "red", "orange", "green", "pink"
-]
-
 var Graphic = function (canvasName) {
 	this.canvas = document.getElementById(canvasName);
 	this.width = this.canvas.width;
