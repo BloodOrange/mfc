@@ -6,6 +6,7 @@ var path		= require('path');
 var common = require('./common');
 var Board = common.Board;
 var Player = common.Player;
+var Egg = common.Egg;
 
 var nbPlayer = 10;
 
@@ -40,11 +41,16 @@ var Id = function () {
 	}
 }
 
-var id = new Id();
+var idPlayer = new Id();
+var idEgg = new Id();
 
 function newPlayer(pseudo, x, y) {
-	var i = id.next();
+	var i = idPlayer.next();
 	return new Player(i, pseudo, x, y, colors[i], 0);
+}
+
+function newEgg(owner) {
+	return new Egg(idEgg.next(), owner.x, owner.y, owner.id, 2);
 }
 
 function generateBoard(width, height) {
@@ -73,7 +79,40 @@ var players = [
 	newPlayer("david", 3, 2),
 	newPlayer("sarah", 5, 5)
 ]
+
+var eggs = new Array();
+
 var board = generateBoard(10, 10);
+
+function movePlayer(socket, player, key) {
+	var x = player.x;
+	var y = player.y;
+	switch (key) {
+	case 39: // Right
+		x++;
+		break;
+	case 37: // Left
+		x--;
+		break;
+	case 38: // Up
+		y--;
+		break;
+	case 40: // Down
+		y++;
+		break;
+	}
+	if (!isWalkable(board, x, y)) return;
+	player.x = x;
+	player.y = y;
+	var event = {
+		'id': player.id,
+		'x': player.x,
+		'y': player.y
+	};
+	socket.emit('move-to', event);
+	socket.broadcast.emit('move-to', event);
+	
+}
 
 var io = require('socket.io').listen(server);
 
@@ -83,41 +122,35 @@ io.sockets.on('connection', function (socket) {
 
 	socket.emit('initGame', {
 		'board': board,
-		'players': players
+		'players': players,
+		'eggs': eggs
 	});
 	
 	socket.on('keypress', function (key) {
 		if (player == null) return;
 		
-		var x = player.x;
-		var y = player.y;
 		switch (key) {
 		case 39: // Right
-			x++;
-			break;
 		case 37: // Left
-			x--;
-			break;
 		case 38: // Up
-			y--;
-			break;
 		case 40: // Down
-			y++;
+			movePlayer(socket, player, key);
+			break;
+		case 32: // Space
+			var egg = newEgg(player);
+			eggs[egg.id] = egg;
+			// use clearInterval(explosedTimer) to desarm timer
+			var explosedTimer = setTimeout(function () {
+				socket.emit('eggExplosed', egg.id);
+			}, 2000);
+
+			socket.broadcast.emit('newEgg', egg);
+			socket.emit('newEgg', egg);
 			break;
 		default:
 			console.log("Key unknown: " + key);
 			return;
 		}
-		if (!isWalkable(board, x, y)) return;
-		player.x = x;
-		player.y = y;
-		var event = {
-			'id': player.id,
-			'x': player.x,
-			'y': player.y
-		};
-		socket.emit('move-to', event);
-		socket.broadcast.emit('move-to', event);
 	});
 	socket.on('joinParty', function (pseudo) {
 		console.log(pseudo + ' join the party');

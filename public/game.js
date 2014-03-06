@@ -65,7 +65,9 @@ function refreshBoard() {
 	players.forEach(function (player) {
 		player.draw(graphic);
 	});
-	eggs[0].draw(graphic);
+	eggs.forEach(function (egg) {
+		egg.draw(graphic);
+	})
 }
 
 function toggleInfo(connected) {
@@ -140,6 +142,11 @@ function initGame(gameState) {
 			addPlayerOnListView(player);
 		}
 	}
+	if (gameState.eggs) {
+		gameState.eggs.forEach(function (newEgg) {
+			eggs[newEgg.id] = new Egg(newEgg.id, newEgg.x * 64 + 32, newEgg.y * 64 + 32, newEgg.owner, newEgg.power);
+		});
+	}
 	refreshBoard();
 } 
 
@@ -199,7 +206,18 @@ function connectServer() {
 		canvas.tabIndex = 1000;
 		canvas.addEventListener("keydown", keydown, false);
 		canvas.focus();
-
+	});
+	ws.on('newEgg', function (newEgg) {
+		console.log('Oh no, a bomb edd has dropped');
+		console.log(newEgg);
+		eggs[newEgg.id] = new Egg(newEgg.id, newEgg.x * 64 + 32, newEgg.y * 64 + 32, newEgg.owner, newEgg.power);
+		//eggs[newEgg.id] = newEgg;
+		eggs[newEgg.id].draw(graphic);
+	});
+	ws.on('eggExplosed', function (egg) {
+		console.log('The egg ' + egg + ' has explosed!');
+		eggs.splice(egg, 1);
+		refreshBoard();
 	});
 	ws.on('error', function (e) {
 		console.log("Socket error: " + e);
@@ -234,8 +252,6 @@ function init() {
 	board = new Board(0, 0);
 	board.draw(graphic);
 
-	eggs[0] = new Egg(0, 3 * 64 + 32, 4 * 64 + 32, null, 2);
-	
 	connectServer();
 	
 	var join = document.getElementById("join");
