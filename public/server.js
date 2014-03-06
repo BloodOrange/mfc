@@ -83,7 +83,7 @@ io.sockets.on('connection', function (socket) {
 		socket.emit('newPlayer', {
 			'id': nextId++,
 			'pseudo': pseudo,
-			'color': 1,
+			'color': "#ff7700",
 			'x': 1,
 			'y': 1,
 			'score': 23

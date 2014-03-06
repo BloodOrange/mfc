@@ -69,7 +69,7 @@ var Player = function (id, pseudo, x, y, color, score) {
 	this.draw = function (graph) {
 		//graph.context.drawImage(this.image, this.x, this.y);
 		console.log(this.color);
-		graph.context.fillstyle = this.color;
+		graph.context.fillStyle = this.color;
 		graph.context.beginPath();
 		graph.context.arc(this.x, this.y, 32, 0, 2 * Math.PI);
 		graph.context.stroke();
@@ -129,8 +129,6 @@ function updatePlayersListView() {
 
 function initGame(gameState) {
 	if (gameState.board && gameState.board.tiles) {
-		console.log("pourquoi ?????????????");		
-
 		board.tiles = gameState.board.tiles;
 		board.draw(graphic);
 	}
