@@ -169,7 +169,7 @@ function connectServer() {
 	});
 	ws.on('newPlayer', function (newPlayer) {
 		console.log("New player");
-		console.log(event.newPlayer);
+		//console.log(event.newPlayer);
 		var player = new Player(newPlayer.id, newPlayer.pseudo,
 								newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
 								newPlayer.color, newPlayer.score);
