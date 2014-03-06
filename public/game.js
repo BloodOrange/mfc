@@ -2,6 +2,12 @@ ws = null;
 board = null;
 graphic = null;
 players = new Array();
+eggs = new Array();
+myplayer = null;
+
+var Board = common.Board;
+var Player = common.Player;
+var Egg = common.Egg;
 
 var Graphic = function (canvasName) {
 	this.canvas = document.getElementById(canvasName);
@@ -15,62 +21,51 @@ var Graphic = function (canvasName) {
 	}
 }
 
-var Board = function (width, height) {
-	this.width		= width;
-	this.height		= height;
-	this.tiles		= new Array();
-	//this.tileset	= new Array(); // Liste des images
-
+Board.prototype.draw = function (graph) {
+	/*var image = new Image();
+	  image.src = "file.jpg";
+	  
+	  graph.context.drawImage(image, 50, 50);*/
 	for (var y = 0; y < this.height; y++) {
-		this.tiles[y]	= new Array();
 		for (var x = 0; x < this.width; x++) {
-			if (x == 0 || x == 9 || y == 0 || y == 9)
-				this.tiles[y][x] = 1;
-			else
-				this.tiles[y][x] = 0;
-		}
-	}
-
-	this.draw = function (graph) {
-		/*var image = new Image();
-		  image.src = "file.jpg";
-		  
-		  graph.context.drawImage(image, 50, 50);*/
-		for (var y = 0; y < this.height; y++) {
-			for (var x = 0; x < this.width; x++) {
-				if (this.tiles[y][x] == 1) {
-					graph.context.fillStyle = "red";
-					graph.context.fillRect(x * 64, y * 64, 64, 64);
-				}
+			if (this.tiles[y][x] == 1) {
+				graph.context.fillStyle = "red";
+			} else {
+				graph.context.fillStyle = "olivedrab";
 			}
+			graph.context.fillRect(x * 64, y * 64, 64, 64);
 		}
 	}
 }
 
-var Player = function (id, pseudo, x, y, color, score) {
-	this.id = id;
-	this.pseudo = pseudo;
-	this.x = x;
-	this.y = y;
-	this.score = score;
-	this.color = color;
-	//this.image = new Image();
-	//this.image.src = "image.png";
+Player.prototype.move = function (x, y) {
+	this.x += x;
+	this.y += y;
+}
 
-	this.move = function (x, y) {
-		this.x += x;
-		this.y += y;
-	}
+Player.prototype.draw = function (graph) {
+	//graph.context.drawImage(this.image, this.x, this.y);
+	graph.context.fillStyle = this.color;
+	graph.context.beginPath();
+	graph.context.arc(this.x, this.y, 32, 0, 2 * Math.PI);
+	graph.context.stroke();
+	graph.context.fill();
+}
 
-	this.draw = function (graph) {
-		//graph.context.drawImage(this.image, this.x, this.y);
-		console.log(this.color);
-		graph.context.fillStyle = this.color;
-		graph.context.beginPath();
-		graph.context.arc(this.x, this.y, 32, 0, 2 * Math.PI);
-		graph.context.stroke();
-		graph.context.fill();
-	}
+Egg.prototype.draw = function (graph) {
+	graph.context.fillStyle = "white";
+	graph.context.beginPath();
+	graph.context.arc(this.x, this.y, 24, 0, 2 * Math.PI);
+	graph.context.stroke();
+	graph.context.fill();
+}
+
+function refreshBoard() {
+	board.draw(graphic);
+	players.forEach(function (player) {
+		player.draw(graphic);
+	});
+	eggs[0].draw(graphic);
 }
 
 function toggleInfo(connected) {
@@ -93,6 +88,9 @@ function addPlayerOnListView(player) {
 	var playerNode = document.createElement("div");
 	playerNode.setAttribute("id", "player" + player.id);
 	playerNode.setAttribute("class", "player");
+	if (myplayer && myplayer.id == player.id) {
+		playerNode.setAttribute("class", "myplayer player");
+	}
 	playerNode.style.backgroundImage = "linear-gradient(to right, " + player.color +
 		" 0%, white 20%, white 100%)";
 	
@@ -126,7 +124,9 @@ function updatePlayersListView() {
 function initGame(gameState) {
 	if (gameState.board && gameState.board.tiles) {
 		board.tiles = gameState.board.tiles;
-		board.draw(graphic);
+		board.width = gameState.board.width;
+		board.height = gameState.board.height;
+		//board.draw(graphic);
 	}
 	console.log(board);
 	if (gameState.players) {
@@ -135,17 +135,18 @@ function initGame(gameState) {
 			var player = new Player(newPlayer.id, newPlayer.pseudo,
 									newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
 									newPlayer.color, newPlayer.score);
-			player.draw(graphic);
-			players.push(player);
+			//player.draw(graphic);
+			players[player.id] = player;
 			addPlayerOnListView(player);
 		}
 	}
+	refreshBoard();
 } 
 
 function connectServer() {
 	if (ws) return;
 
-	ws = io.connect('http://mfc.lo:8000');
+	ws = io.connect('http://localhost:8080');
 	ws.on('connect', function () {
 		console.log("Socket opened");
 		toggleInfo(true);
@@ -168,12 +169,37 @@ function connectServer() {
 								newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
 								newPlayer.color, newPlayer.score);
 		player.draw(graphic);
-		players.push(player);
+		players[player.id] = player;
 		addPlayerOnListView(player);
 	});
-	ws.on('youJoin', function (myPlayer) {
+	ws.on('move-to', function (event) {
+		console.log(event);
+		var player = players[event.id];
+		player.x = event.x * 64 + 32;
+		player.y = event.y * 64 + 32;
+		refreshBoard();
+	});
+	ws.on('youJoin', function (newPlayer) {
 		console.log('You join the game');
-		console.log(myPlayer);
+		console.log(newPlayer);
+		var joinButton = document.getElementById("joinButton");
+		var connection = document.getElementById("connection");
+
+		joinButton.disabled = false;
+		connection.style.display = "none";
+
+		myplayer = new Player(newPlayer.id, newPlayer.pseudo,
+							  newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
+							  newPlayer.color, newPlayer.score);
+		myplayer.draw(graphic);
+		players[myplayer.id] = myplayer;
+		addPlayerOnListView(myplayer);
+
+		var canvas = document.getElementById("boardCanvas");
+		canvas.tabIndex = 1000;
+		canvas.addEventListener("keydown", keydown, false);
+		canvas.focus();
+
 	});
 	ws.on('error', function (e) {
 		console.log("Socket error: " + e);
@@ -192,11 +218,7 @@ function keydown(e) {
 	case 40:		// Down
 	case 32:		// Space
 		if (ws) {
-			var data = {
-				"event": "keydown",
-				"key": e.keyCode
-			}
-			ws.emit('keypress', data);
+			ws.emit('keypress', e.keyCode);
 		}
 		break;
 	default:
@@ -209,9 +231,11 @@ function keydown(e) {
 function init() {
 	graphic = new Graphic("boardCanvas");
 	graphic.erase();
-	board = new Board(10, 10);
+	board = new Board(0, 0);
 	board.draw(graphic);
 
+	eggs[0] = new Egg(0, 3 * 64 + 32, 4 * 64 + 32, null, 2);
+	
 	connectServer();
 	
 	var join = document.getElementById("join");
@@ -231,11 +255,6 @@ function init() {
 	connect.addEventListener("click", function (e) {
 		connectServer();
 	});
-
-	var canvas = document.getElementById("boardCanvas");
-	canvas.tabIndex = 1000;
-	canvas.addEventListener("keydown", keydown, false);
-	canvas.focus();
 }
 
 window.onload = init;

@@ -3,9 +3,11 @@
 var http		= require('http');
 var fs			= require('fs');
 var path		= require('path');
-var common = require('./common.js');
+var common = require('./common');
 var Board = common.Board;
 var Player = common.Player;
+
+var nbPlayer = 10;
 
 var server = http.createServer(function(req, res) {
 	var filename = path.basename(req.url) || "index.html";
@@ -14,6 +16,21 @@ var server = http.createServer(function(req, res) {
 		res.end(content);
 	});
 });
+
+var colors = [
+	"#ff0000",
+	"#00ff00",
+	"#0000ff",
+	"#ff7700",
+	"#ff0077",
+	"#77ff00",
+	"#7700ff",
+	"#00ff77",
+	"#0077ff",
+	"#ff7777",
+	"#77ff77",
+	"#7777ff"
+]
 
 var Id = function () {
 	this.id = 0;
@@ -25,8 +42,9 @@ var Id = function () {
 
 var id = new Id();
 
-function newPlayer(pseudo, x, y, color) {
-	return new Player(id.next(), pseudo, x, y, color, 0);
+function newPlayer(pseudo, x, y) {
+	var i = id.next();
+	return new Player(i, pseudo, x, y, colors[i], 0);
 }
 
 function generateBoard(width, height) {
@@ -46,10 +64,14 @@ function generateBoard(width, height) {
 	return board;
 }
 
+function isWalkable(board, x, y) {
+	return !board.tiles[y][x];
+}
+
 var players = [
-	newPlayer("cactus", 2, 4, "#ff0000"),
-	newPlayer("david", 3, 2, "#0000ff"),
-	newPlayer("sarah", 5, 5, "ff00ff")
+	newPlayer("cactus", 2, 4),
+	newPlayer("david", 3, 2),
+	newPlayer("sarah", 5, 5)
 ]
 var board = generateBoard(10, 10);
 
@@ -64,12 +86,43 @@ io.sockets.on('connection', function (socket) {
 		'players': players
 	});
 	
-	socket.on('keypress', function (data) {
-		console.log(data);
+	socket.on('keypress', function (key) {
+		if (player == null) return;
+		
+		var x = player.x;
+		var y = player.y;
+		switch (key) {
+		case 39: // Right
+			x++;
+			break;
+		case 37: // Left
+			x--;
+			break;
+		case 38: // Up
+			y--;
+			break;
+		case 40: // Down
+			y++;
+			break;
+		default:
+			console.log("Key unknown: " + key);
+			return;
+		}
+		if (!isWalkable(board, x, y)) return;
+		player.x = x;
+		player.y = y;
+		var event = {
+			'id': player.id,
+			'x': player.x,
+			'y': player.y
+		};
+		socket.emit('move-to', event);
+		socket.broadcast.emit('move-to', event);
 	});
 	socket.on('joinParty', function (pseudo) {
 		console.log(pseudo + ' join the party');
 		player = newPlayer(pseudo, 1, 1, "#ff7700");
+		players.push(player);
 		socket.broadcast.emit('newPlayer', player);
 		socket.emit('youJoin', player);
 	});
@@ -78,5 +131,5 @@ io.sockets.on('connection', function (socket) {
 	});
 });
 
-server.listen(8000);
+server.listen(8080);
 

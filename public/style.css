@@ -45,3 +45,7 @@
 .playerScore {
 	float: right;
 }
+
+.myplayer {
+	font-weight: bold;
+}
