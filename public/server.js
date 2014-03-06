@@ -66,6 +66,8 @@ var io = require('socket.io').listen(server);
 
 io.sockets.on('connection', function (socket) {
 	console.log('New connection');
+	var player = null;
+	
 	gameState.players.forEach(function (player) {
 		player.id = nextId++;
 	});
@@ -78,16 +80,21 @@ io.sockets.on('connection', function (socket) {
 		console.log('Message received');
 		console.log(data);
 	});
+	socket.on('keypress', function (data) {
+		console.log(data);
+	});
 	socket.on('joinParty', function (pseudo) {
 		console.log(pseudo + ' join the party');
-		socket.emit('newPlayer', {
+		player = {
 			'id': nextId++,
 			'pseudo': pseudo,
 			'color': "#ff7700",
 			'x': 1,
 			'y': 1,
 			'score': 23
-		});
+		};
+		socket.broadcast.emit('newPlayer', player);
+		socket.emit('youJoin', player);
 	});
 	socket.on('disconnect', function () {
 		console.log('End connection');

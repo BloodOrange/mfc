@@ -175,6 +175,10 @@ function connectServer() {
 		players.push(player);
 		addPlayerOnListView(player);
 	});
+	ws.on('youJoin', function (myPlayer) {
+		console.log('You join the game');
+		console.log(myPlayer);
+	});
 	ws.on('error', function (e) {
 		console.log("Socket error: " + e);
 		toggleInfo(false);
@@ -203,7 +207,7 @@ function keydown(e) {
 		console.log("unknown key: " + e.keyCode);
 	}
 	
-	return false;
+	return true;
 }
 
 function init() {
