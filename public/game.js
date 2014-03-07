@@ -68,6 +68,7 @@ function refreshBoard() {
 	eggs.forEach(function (egg) {
 		egg.draw(graphic);
 	})
+	console.log("loglog");
 }
 
 function toggleInfo(connected) {
@@ -147,13 +148,12 @@ function initGame(gameState) {
 			eggs[newEgg.id] = new Egg(newEgg.id, newEgg.x * 64 + 32, newEgg.y * 64 + 32, newEgg.owner, newEgg.power);
 		});
 	}
-	refreshBoard();
 } 
 
 function connectServer() {
 	if (ws) return;
 
-	ws = io.connect('http://localhost:8080');
+	ws = io.connect('http://localhost:8000');
 	ws.on('connect', function () {
 		console.log("Socket opened");
 		toggleInfo(true);
@@ -175,7 +175,7 @@ function connectServer() {
 		var player = new Player(newPlayer.id, newPlayer.pseudo,
 								newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
 								newPlayer.color, newPlayer.score);
-		player.draw(graphic);
+		//player.draw(graphic);
 		players[player.id] = player;
 		addPlayerOnListView(player);
 	});
@@ -184,7 +184,6 @@ function connectServer() {
 		var player = players[event.id];
 		player.x = event.x * 64 + 32;
 		player.y = event.y * 64 + 32;
-		refreshBoard();
 	});
 	ws.on('youJoin', function (newPlayer) {
 		console.log('You join the game');
@@ -198,7 +197,7 @@ function connectServer() {
 		myplayer = new Player(newPlayer.id, newPlayer.pseudo,
 							  newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
 							  newPlayer.color, newPlayer.score);
-		myplayer.draw(graphic);
+		//myplayer.draw(graphic);
 		players[myplayer.id] = myplayer;
 		addPlayerOnListView(myplayer);
 
@@ -212,12 +211,11 @@ function connectServer() {
 		console.log(newEgg);
 		eggs[newEgg.id] = new Egg(newEgg.id, newEgg.x * 64 + 32, newEgg.y * 64 + 32, newEgg.owner, newEgg.power);
 		//eggs[newEgg.id] = newEgg;
-		eggs[newEgg.id].draw(graphic);
+		//eggs[newEgg.id].draw(graphic);
 	});
 	ws.on('eggExplosed', function (egg) {
 		console.log('The egg ' + egg + ' has explosed!');
 		eggs.splice(egg, 1);
-		refreshBoard();
 	});
 	ws.on('error', function (e) {
 		console.log("Socket error: " + e);
@@ -271,6 +269,11 @@ function init() {
 	connect.addEventListener("click", function (e) {
 		connectServer();
 	});
+
+	setInterval(function(){
+    refreshBoard();
+    }, 160);
+	
 }
 
 window.onload = init;
