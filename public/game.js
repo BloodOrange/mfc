@@ -214,9 +214,9 @@ function connectServer() {
 		//eggs[newEgg.id] = newEgg;
 		eggs[newEgg.id].draw(graphic);
 	});
-	ws.on('eggExplosed', function (egg) {
-		console.log('The egg ' + egg + ' has explosed!');
-		eggs.splice(egg, 1);
+	ws.on('eggExplosed', function (eggId) {
+		console.log('The egg ' + eggId + ' has explosed!');
+		delete eggs[eggId];
 		refreshBoard();
 	});
 	ws.on('error', function (e) {

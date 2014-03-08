@@ -8,7 +8,8 @@ var Board = common.Board;
 var Player = common.Player;
 var Egg = common.Egg;
 
-var nbPlayer = 10;
+var nbPlayerMax = 10;
+var nbEggsMax = 1000;
 
 var server = http.createServer(function(req, res) {
 	var filename = path.basename(req.url) || "index.html";
@@ -33,16 +34,29 @@ var colors = [
 	"#7777ff"
 ]
 
-var Id = function () {
-	this.id = 0;
+var players = new Array();
+var eggs = new Array();
+
+var Id = function (start, max, list) {
+	this.start = start;
+	this.max = max;
+	this.id = start;
+	this.list = list;
 
 	this.next = function () {
+		if (this.id > this.max)
+			this.id = this.start;
+		while (list[this.id] != undefined) {
+			this.id++;
+			if (this.id > this.max)
+				this.id = this.start;
+		} 
 		return this.id++;
 	}
 }
 
-var idPlayer = new Id();
-var idEgg = new Id();
+var idPlayer = new Id(0, 100, players);
+var idEgg = new Id(0, 100, eggs);
 
 function newPlayer(pseudo, x, y) {
 	var i = idPlayer.next();
@@ -74,15 +88,67 @@ function isWalkable(board, x, y) {
 	return !board.tiles[y][x];
 }
 
-var players = [
-	newPlayer("cactus", 2, 4),
-	newPlayer("david", 3, 2),
-	newPlayer("sarah", 5, 5)
-]
-
-var eggs = new Array();
-
 var board = generateBoard(10, 10);
+
+function impactedByEgg(idEgg) {
+	var egg = eggs[idEgg];
+
+	var dead = new Array();
+
+	var wallRight = false;
+	var wallLeft = false;
+	var wallUp = false;
+	var wallDown = false;
+
+	for (var i = 0; i < egg.power; i++) {
+		if (!wallRight) {
+			if (board.tiles[egg.y][egg.x + i]) {
+				wallRight = true;
+			} else {
+				for (index in players) {
+					if (players[index].x == egg.x + i && players[index].y == egg.y) {
+						dead.push(players[index]);
+					}
+				}
+			}
+		}
+		if (!wallLeft) {
+			if (board.tiles[egg.y][egg.x - i]) {
+				wallLeft = true;
+			} else {
+				for (index in players) {
+					if (players[index].x == egg.x - i && players[index].y == egg.y) {
+						dead.push(players[index]);
+					}
+				}
+			}
+		}
+		if (!wallUp) {
+			if (board.tiles[egg.y - i][egg.x]) {
+				wallUp = true;
+			} else {
+				for (index in players) {
+					if (players[index].x == egg.x && players[index].y == egg.y - i) {
+						dead.push(players[index]);
+					}
+				}
+			}
+		}
+		if (!wallDown) {
+			if (board.tiles[egg.y + i][egg.x]) {
+				wallDown = true;
+			} else {
+				for (index in players) {
+					if (players[index].x == egg.x && players[index].y == egg.y + i) {
+						dead.push(players[index]);
+					}
+				}
+			}
+		}
+	}
+	
+	return dead;
+}
 
 function movePlayer(socket, player, key) {
 	var x = player.x;
@@ -111,7 +177,6 @@ function movePlayer(socket, player, key) {
 	};
 	socket.emit('move-to', event);
 	socket.broadcast.emit('move-to', event);
-	
 }
 
 var io = require('socket.io').listen(server);
@@ -141,6 +206,11 @@ io.sockets.on('connection', function (socket) {
 			eggs[egg.id] = egg;
 			// use clearInterval(explosedTimer) to desarm timer
 			var explosedTimer = setTimeout(function () {
+				var deadPlayers = impactedByEgg(egg.id);
+				deadPlayers.forEach(function (dead) {
+					console.log(dead.pseudo + " is dead!");
+				});
+				delete eggs[egg.id];
 				socket.emit('eggExplosed', egg.id);
 			}, 2000);
 
