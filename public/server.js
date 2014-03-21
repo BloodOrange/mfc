@@ -5,7 +5,6 @@ var fs			= require('fs');
 var path		= require('path');
 var common = require('./common');
 var Board = common.Board;
-var Player = common.Player;
 var Egg = common.Egg;
 
 var nbPlayerMax = 10;
@@ -79,13 +78,52 @@ var Id = function (start, max, list) {
 var idPlayer = new Id(0, 100, players);
 var idEgg = new Id(0, 100, eggs);
 
-function newPlayer(pseudo, x, y) {
-	var i = idPlayer.next();
-	return new Player(i, pseudo, x, y, colors[i], 0, 5, "pouletOrange.png");
+function Player(pseudo, x, y) {
+	var id = idPlayer.next();
+	this.lastActionTime = 0;
+	common.Player.call(this, id, pseudo, x, y, colors[id], 0, 5, "pouletOrange.png");
 }
+Player.prototype = new common.Player();
+
+Player.prototype.move = function (socket, key) {
+	if (Date.now() - this.lastActionTime < 70)
+		return;
+	
+	var x = this.x;
+	var y = this.y;
+	switch (key) {
+	case 39: // Right
+		x++;
+		break;
+	case 37: // Left
+		x--;
+		break;
+	case 38: // Up
+		y--;
+		break;
+	case 40: // Down
+		y++;
+		break;
+	}
+	if (!isWalkable(board, x, y)) return;
+	this.lastActionTime = Date.now();
+	this.x = x;
+	this.y = y;
+	var event = {
+		'id': this.id,
+		'x': this.x,
+		'y': this.y
+	};
+	socket.emit('move-to', event);
+	socket.broadcast.emit('move-to', event);
+};
 
 function newEgg(owner) {
+<<<<<<< HEAD
 	return new Egg(idEgg.next(), owner.x, owner.y, owner.id, 2, "oeuf.png");
+=======
+	return new Egg(idEgg.next(), owner.x, owner.y, owner.id, 4);
+>>>>>>> 98529a7c966e6335446ccedd83fbe02299bf29be
 }
 
 function generateBoard(width, height) {
@@ -97,8 +135,8 @@ function generateBoard(width, height) {
 		[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 		[1, 0, 0, 1, 0, 1, 0, 1, 0, 1],
 		[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-		[1, 0, 1, 1, 1, 1, 0, 1, 0, 1],
-		[1, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+		[1, 0, 2, 1, 2, 1, 0, 1, 0, 1],
+		[1, 0, 2, 0, 2, 0, 0, 0, 0, 1],
 		[1, 0, 0, 1, 0, 1, 0, 1, 0, 1],
  		[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -129,7 +167,8 @@ function impactedByEgg(idEgg) {
 			} else {
 				for (index in players) {
 					if (players[index].x == egg.x + i && players[index].y == egg.y) {
-						dead.push(players[index]);
+						if (dead.indexOf(players[i]) == -1)
+							dead.push(players[index]);
 					}
 				}
 			}
@@ -140,7 +179,8 @@ function impactedByEgg(idEgg) {
 			} else {
 				for (index in players) {
 					if (players[index].x == egg.x - i && players[index].y == egg.y) {
-						dead.push(players[index]);
+						if (dead.indexOf(players[i]) == -1)						
+							dead.push(players[index]);
 					}
 				}
 			}
@@ -151,7 +191,8 @@ function impactedByEgg(idEgg) {
 			} else {
 				for (index in players) {
 					if (players[index].x == egg.x && players[index].y == egg.y - i) {
-						dead.push(players[index]);
+						if (dead.indexOf(players[i]) == -1)						
+							dead.push(players[index]);
 					}
 				}
 			}
@@ -162,7 +203,8 @@ function impactedByEgg(idEgg) {
 			} else {
 				for (index in players) {
 					if (players[index].x == egg.x && players[index].y == egg.y + i) {
-						dead.push(players[index]);
+						if (dead.indexOf(players[i]) == -1)						
+							dead.push(players[index]);
 					}
 				}
 			}
@@ -170,35 +212,6 @@ function impactedByEgg(idEgg) {
 	}
 	
 	return dead;
-}
-
-function movePlayer(socket, player, key) {
-	var x = player.x;
-	var y = player.y;
-	switch (key) {
-	case 39: // Right
-		x++;
-		break;
-	case 37: // Left
-		x--;
-		break;
-	case 38: // Up
-		y--;
-		break;
-	case 40: // Down
-		y++;
-		break;
-	}
-	if (!isWalkable(board, x, y)) return;
-	player.x = x;
-	player.y = y;
-	var event = {
-		'id': player.id,
-		'x': player.x,
-		'y': player.y
-	};
-	socket.emit('move-to', event);
-	socket.broadcast.emit('move-to', event);
 }
 
 var io = require('socket.io').listen(server);
@@ -221,7 +234,7 @@ io.sockets.on('connection', function (socket) {
 		case 37: // Left
 		case 38: // Up
 		case 40: // Down
-			movePlayer(socket, player, key);
+			player.move(socket, key);
 			break;
 		case 32: // Space
 			var egg = newEgg(player);
@@ -234,7 +247,7 @@ io.sockets.on('connection', function (socket) {
 
 				deadPlayers.forEach(function (dead) {
 					dead.life -= 1
-					if (dead.life > 1) {
+					if (dead.life < 100) {
 						var message = {
 							"id": dead.id,
 							"life": dead.life
@@ -256,7 +269,7 @@ io.sockets.on('connection', function (socket) {
 	});
 	socket.on('joinParty', function (pseudo) {
 		console.log(pseudo + ' join the party');
-		player = newPlayer(pseudo, 1, 1, "#ff7700");
+		player = new Player(pseudo, 1, 1, "#ff7700");
 		players.push(player);
 		socket.broadcast.emit('newPlayer', player);
 		socket.emit('youJoin', player);
