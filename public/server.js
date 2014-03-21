@@ -93,12 +93,13 @@ function generateBoard(width, height) {
 	board.tiles = [
 		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 		[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[1, 0, 0, 1, 0, 1, 0, 1, 0, 1],
 		[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[1, 0, 0, 1, 0, 1, 0, 1, 0, 1],
 		[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-		[1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-		[1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-		[1, 0, 1, 1, 1, 1, 0, 0, 0, 1],
-		[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[1, 0, 1, 1, 1, 1, 0, 1, 0, 1],
+		[1, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+		[1, 0, 0, 1, 0, 1, 0, 1, 0, 1],
  		[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 	];
@@ -109,7 +110,7 @@ function isWalkable(board, x, y) {
 	return !board.tiles[y][x];
 }
 
-var board = generateBoard(10, 10);
+var board = generateBoard(11, 11);
 
 function impactedByEgg(idEgg) {
 	var egg = eggs[idEgg];
@@ -239,7 +240,7 @@ io.sockets.on('connection', function (socket) {
 							"life": dead.life
 						}
 						socket.emit("lostLife", message);
-						socket.broadcard.emit("lostLife", message);
+						socket.broadcast.emit("lostLife", message);
 					}
 				});
 				delete eggs[egg.id];

@@ -242,7 +242,8 @@ function connectServer() {
 		//console.log(event.newPlayer);
 		var player = new Player(newPlayer.id, newPlayer.pseudo,
 								newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
-								newPlayer.color, newPlayer.score, newPlayer.imgSrc);
+								newPlayer.color, newPlayer.score, newPlayer.life,
+								newPlayer.imgSrc);
 		//player.draw(graphic);
 		players[player.id] = player;
 		addPlayerOnListView(player);
