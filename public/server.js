@@ -11,13 +11,34 @@ var Egg = common.Egg;
 var nbPlayerMax = 10;
 var nbEggsMax = 1000;
 
+var mime = {
+	"html":"text/html",
+	"css" : "text/css",
+	"gif" : "image/gif",
+	"jpg" : "image/jpg",
+	"jpeg": "image/jpeg",
+	"js" : "application/javascript",
+	"ttf" : "font/ttf",
+	"png" : "image/png"
+}
+
 var server = http.createServer(function(req, res) {
-	var filename = path.basename(req.url) || "index.html";
-	fs.readFile('./' + filename, 'utf-8', function(error, content) {
-		res.writeHead(200, {"Content-Type": "text/html"});
-		res.end(content);
+	var filename = path.basename(req.url) || "index.html" ;
+
+	var ext=(/[.]/.exec(filename)) ? /[^.]+$/.exec(filename) : undefined;
+
+
+	fs.readFile('./' + filename, 'UTF-8', function(error, content) {
+		res.writeHead(200, {"Content-Type": mime[ext]});
+		if (ext=='png'){
+			var img = fs.readFileSync('./'+filename);
+			res.end(img,'binary');
+		}
+		else{
+			res.end(content);
+		}
 	});
-});
+})
 
 var colors = [
 	"#ff0000",
@@ -60,7 +81,7 @@ var idEgg = new Id(0, 100, eggs);
 
 function newPlayer(pseudo, x, y) {
 	var i = idPlayer.next();
-	return new Player(i, pseudo, x, y, colors[i], 0, 5);
+	return new Player(i, pseudo, x, y, colors[i], 0, 5, "pouletOrange.png");
 }
 
 function newEgg(owner) {

@@ -8,15 +8,18 @@ myplayer = null;
 var Board = common.Board;
 var Egg = common.Egg;
 
-
-function Player (id, pseudo, x, y, color, score, life) {
+function Player (id, pseudo, x, y, color, score, life, imgSrc) {
 	this.realX = x;
 	this.realY = y;
 
 	this.state = 0; // 0 - WAITING; 1 - WALKING
 	this.speed = 10;
+	this.img = new Image();
+	var imgSrc = "http://localhost:8000/" + imgSrc;
+	this.img.src = imgSrc;
+	//this.img.src = imgSrc;
 
-	common.Player.call(this, id, pseudo, x, y, color, score, life);
+	common.Player.call(this, id, pseudo, x, y, color, score, life, imgSrc);
 }
 Player.prototype = new common.Player();
 
@@ -27,12 +30,11 @@ Player.prototype.moveto = function (x, y) {
 }
 
 Player.prototype.draw = function (graph) {
-	//graph.context.drawImage(this.image, this.x, this.y);
-	graph.context.fillStyle = this.color;
-	graph.context.beginPath();
-	graph.context.arc(this.realX, this.realY, 32, 0, 2 * Math.PI);
+	graph.context.drawImage(this.img, parseInt(this.realX) - 32, parseInt(this.realY) - 32);
+		
 	graph.context.stroke();
 	graph.context.fill();
+		
 }
 
 Player.prototype.update = function () {
@@ -197,7 +199,7 @@ function initGame(gameState) {
 			var newPlayer = gameState.players[i];
 			var player = new Player(newPlayer.id, newPlayer.pseudo,
 									newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
-									newPlayer.color, newPlayer.score, newPlayer.life);
+									newPlayer.color, newPlayer.score, newPlayer.life, newPlayer.imgSrc);
 			//player.draw(graphic);
 			players[player.id] = player;
 			addPlayerOnListView(player);
@@ -213,7 +215,7 @@ function initGame(gameState) {
 function connectServer() {
 	if (ws) return;
 
-	ws = io.connect('http://localhost:8000');
+	ws = io.connect('http://10.16.162.51:8000');
 	ws.on('connect', function () {
 		console.log("Socket opened");
 		toggleInfo(true);
@@ -234,7 +236,7 @@ function connectServer() {
 		//console.log(event.newPlayer);
 		var player = new Player(newPlayer.id, newPlayer.pseudo,
 								newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
-								newPlayer.color, newPlayer.score);
+								newPlayer.color, newPlayer.score, newPlayer.imgSrc);
 		//player.draw(graphic);
 		players[player.id] = player;
 		addPlayerOnListView(player);
@@ -255,7 +257,8 @@ function connectServer() {
 
 		myplayer = new Player(newPlayer.id, newPlayer.pseudo,
 							  newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
-							  newPlayer.color, newPlayer.score, newPlayer.life);
+							  newPlayer.color, newPlayer.score, newPlayer.life,
+							 newPlayer.imgSrc);
 		//myplayer.draw(graphic);
 		players[myplayer.id] = myplayer;
 		addPlayerOnListView(myplayer);
