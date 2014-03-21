@@ -60,7 +60,7 @@ var idEgg = new Id(0, 100, eggs);
 
 function newPlayer(pseudo, x, y) {
 	var i = idPlayer.next();
-	return new Player(i, pseudo, x, y, colors[i], 0);
+	return new Player(i, pseudo, x, y, colors[i], 0, 5);
 }
 
 function newEgg(owner) {
@@ -207,11 +207,21 @@ io.sockets.on('connection', function (socket) {
 			// use clearInterval(explosedTimer) to desarm timer
 			var explosedTimer = setTimeout(function () {
 				var deadPlayers = impactedByEgg(egg.id);
+				socket.broadcast.emit('eggExplosed', egg.id);
+				socket.emit('eggExplosed', egg.id);
+
 				deadPlayers.forEach(function (dead) {
-					console.log(dead.pseudo + " is dead!");
+					dead.life -= 1
+					if (dead.life > 1) {
+						var message = {
+							"id": dead.id,
+							"life": dead.life
+						}
+						socket.emit("lostLife", message);
+						socket.broadcard.emit("lostLife", message);
+					}
 				});
 				delete eggs[egg.id];
-				socket.emit('eggExplosed', egg.id);
 			}, 2000);
 
 			socket.broadcast.emit('newEgg', egg);

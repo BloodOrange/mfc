@@ -46,6 +46,11 @@
 	float: right;
 }
 
+.playerLife {
+	margin-right: 20px;
+	float: right;
+}
+
 .myplayer {
 	font-weight: bold;
 }

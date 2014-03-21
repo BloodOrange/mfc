@@ -6,8 +6,72 @@ eggs = new Array();
 myplayer = null;
 
 var Board = common.Board;
-var Player = common.Player;
 var Egg = common.Egg;
+
+
+function Player (id, pseudo, x, y, color, score, life) {
+	this.realX = x;
+	this.realY = y;
+
+	this.state = 0; // 0 - WAITING; 1 - WALKING
+	this.speed = 10;
+
+	common.Player.call(this, id, pseudo, x, y, color, score, life);
+}
+Player.prototype = new common.Player();
+
+Player.prototype.moveto = function (x, y) {
+	this.x = x;
+	this.y = y;
+	this.state = 1;
+}
+
+Player.prototype.draw = function (graph) {
+	//graph.context.drawImage(this.image, this.x, this.y);
+	graph.context.fillStyle = this.color;
+	graph.context.beginPath();
+	graph.context.arc(this.realX, this.realY, 32, 0, 2 * Math.PI);
+	graph.context.stroke();
+	graph.context.fill();
+}
+
+Player.prototype.update = function () {
+	if (this.state == 1) {
+		var directionx = this.x - this.realX;
+		var directiony = this.y - this.realY;
+
+		if (directionx == 0 && directiony == 0) {
+			this.state = 0;
+			return;
+		}
+		
+		var speedx = directionx;
+		if (directionx < 0) {
+			speedx = -directionx;
+			directionx = -1;
+		} else {
+			directionx = 1;
+		}
+
+		var speedy = directiony;
+		if (directiony < 0) {
+			speedy = -directiony;
+			directiony = -1;
+		} else {
+			directiony = 1;
+		}
+		
+		if (speedx > this.speed) {
+			speedx = this.speed;
+		}
+		if (speedy > this.speed) {
+			speedy = this.speed;
+		}
+
+		this.realX += speedx * directionx;
+		this.realY += speedy * directiony;
+	}
+}
 
 var Graphic = function (canvasName) {
 	this.canvas = document.getElementById(canvasName);
@@ -38,20 +102,6 @@ Board.prototype.draw = function (graph) {
 	}
 }
 
-Player.prototype.move = function (x, y) {
-	this.x += x;
-	this.y += y;
-}
-
-Player.prototype.draw = function (graph) {
-	//graph.context.drawImage(this.image, this.x, this.y);
-	graph.context.fillStyle = this.color;
-	graph.context.beginPath();
-	graph.context.arc(this.x, this.y, 32, 0, 2 * Math.PI);
-	graph.context.stroke();
-	graph.context.fill();
-}
-
 Egg.prototype.draw = function (graph) {
 	graph.context.fillStyle = "white";
 	graph.context.beginPath();
@@ -68,7 +118,6 @@ function refreshBoard() {
 	eggs.forEach(function (egg) {
 		egg.draw(graphic);
 	})
-	console.log("loglog");
 }
 
 function toggleInfo(connected) {
@@ -107,6 +156,11 @@ function addPlayerOnListView(player) {
 	scoreNode.innerHTML = "" + player.score;
 	playerNode.appendChild(scoreNode);
 
+	var lifeNode = document.createElement("div");
+	lifeNode.setAttribute("class", "playerLife");
+	lifeNode.innerHTML = "" + player.life;
+	playerNode.appendChild(lifeNode);
+
 	var listPlayers = document.getElementById("listPlayers");
 	listPlayers.appendChild(playerNode);
 }
@@ -124,6 +178,12 @@ function updatePlayersListView() {
 	}
 }
 
+function update() {
+	players.forEach(function (player) {
+		player.update();
+	})
+}
+
 function initGame(gameState) {
 	if (gameState.board && gameState.board.tiles) {
 		board.tiles = gameState.board.tiles;
@@ -137,7 +197,7 @@ function initGame(gameState) {
 			var newPlayer = gameState.players[i];
 			var player = new Player(newPlayer.id, newPlayer.pseudo,
 									newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
-									newPlayer.color, newPlayer.score);
+									newPlayer.color, newPlayer.score, newPlayer.life);
 			//player.draw(graphic);
 			players[player.id] = player;
 			addPlayerOnListView(player);
@@ -182,8 +242,7 @@ function connectServer() {
 	ws.on('move-to', function (event) {
 		console.log(event);
 		var player = players[event.id];
-		player.x = event.x * 64 + 32;
-		player.y = event.y * 64 + 32;
+		player.moveto(event.x * 64 + 32, event.y * 64 + 32);
 	});
 	ws.on('youJoin', function (newPlayer) {
 		console.log('You join the game');
@@ -196,7 +255,7 @@ function connectServer() {
 
 		myplayer = new Player(newPlayer.id, newPlayer.pseudo,
 							  newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
-							  newPlayer.color, newPlayer.score);
+							  newPlayer.color, newPlayer.score, newPlayer.life);
 		//myplayer.draw(graphic);
 		players[myplayer.id] = myplayer;
 		addPlayerOnListView(myplayer);
@@ -272,8 +331,9 @@ function init() {
 	});
 
 	setInterval(function(){
-    refreshBoard();
-    }, 160);
+		update();
+		refreshBoard();
+    }, 16);
 	
 }
 
