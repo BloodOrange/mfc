@@ -105,11 +105,17 @@ Board.prototype.draw = function (graph) {
 }
 
 Egg.prototype.draw = function (graph) {
-	graph.context.fillStyle = "white";
+	var img=new Image();
+	img.src="http://localhost:8000/oeuf.png";
+	graph.context.drawImage(img, parseInt(this.x), parseInt(this.y));
+		
+	graph.context.stroke();
+	graph.context.fill();
+	/*graph.context.fillStyle = "white";
 	graph.context.beginPath();
 	graph.context.arc(this.x, this.y, 24, 0, 2 * Math.PI);
 	graph.context.stroke();
-	graph.context.fill();
+	graph.context.fill();*/
 }
 
 function refreshBoard() {
@@ -215,7 +221,7 @@ function initGame(gameState) {
 function connectServer() {
 	if (ws) return;
 
-	ws = io.connect('http://10.16.162.51:8000');
+	ws = io.connect('http://localhost:8000');
 	ws.on('connect', function () {
 		console.log("Socket opened");
 		toggleInfo(true);
