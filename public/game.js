@@ -4,10 +4,19 @@ graphic = null;
 players = new Array();
 eggs = new Array();
 myplayer = null;
+/*var imageMur = new Image();
+imageMur.src = "http://localhost:8000/mur.png";*/
+//var Board = common.Board;
 
-var Board = common.Board;
-var Egg = common.Egg;
-
+function Board(width, height, imgMurSrc){
+	this.width=width;
+	this.height=height;
+	this.img = new Image();
+	var imgMurSrc = "http://localhost:8000/" + imgMurSrc;
+	this.img.src = imgMurSrc;
+	common.Board.call(this,width, height, imgMurSrc);
+}
+Board.prototype=new common.Board();
 function Player (id, pseudo, x, y, color, score, life, imgSrc) {
 	this.realX = x;
 	this.realY = y;
@@ -22,6 +31,7 @@ function Player (id, pseudo, x, y, color, score, life, imgSrc) {
 	common.Player.call(this, id, pseudo, x, y, color, score, life, imgSrc);
 }
 Player.prototype = new common.Player();
+
 
 Player.prototype.moveto = function (x, y) {
 	this.x = x;
@@ -88,14 +98,20 @@ var Graphic = function (canvasName) {
 }
 
 Board.prototype.draw = function (graph) {
-	/*var image = new Image();
-	  image.src = "file.jpg";
+	
 	  
-	  graph.context.drawImage(image, 50, 50);*/
+	  
+	  
 	for (var y = 0; y < this.height; y++) {
 		for (var x = 0; x < this.width; x++) {
 			if (this.tiles[y][x] == 1) {
-				graph.context.fillStyle = "red";
+				
+				//graph.context.fillStyle = "red";
+				//this.img.onload = function(){
+					graph.context.drawImage(this.img, x * 64, y * 64);
+					graph.context.stroke();
+					graph.context.fill();
+				//}
 			} else {
 				graph.context.fillStyle = "olivedrab";
 			}
@@ -103,21 +119,51 @@ Board.prototype.draw = function (graph) {
 		}
 	}
 }
+function Egg(id, x, y, owner, power, imgSrc){
+	this.realX = x;
+	this.realY = y;
+
+	this.owner = owner; // 0 - WAITING; 1 - WALKING
+	this.power = power;
+	this.img = new Image();
+		
+	var imgSrc = "http://localhost:8000/" + imgSrc;
+	this.img.src = imgSrc;
+	common.Egg.call(this, id, x, y, owner, power, imgSrc);
+}
+
+Egg.prototype = new common.Egg();
 
 Egg.prototype.draw = function (graph) {
-	var img=new Image();
-	img.src="http://localhost:8000/oeuf.png";
-	graph.context.drawImage(img, parseInt(this.x), parseInt(this.y));
+	/*var imgEgg=new Image();
+	imgEgg.src="http://localhost:8000/oeuf.png";
+	console.log(this.x+", "+this.y);
+	imgEgg.onload = function(){*/
+	
+	graph.context.drawImage(this.img, parseInt(this.x)- 30, parseInt(this.y)- 32);
 		
 	graph.context.stroke();
 	graph.context.fill();
+/*}*/
 	/*graph.context.fillStyle = "white";
 	graph.context.beginPath();
 	graph.context.arc(this.x, this.y, 24, 0, 2 * Math.PI);
 	graph.context.stroke();
 	graph.context.fill();*/
 }
-
+Egg.prototype.drawJauneOeuf = function (graph) {
+	var imgEgg=new Image();
+	imgEgg.src="http://localhost:8000/jauneOeuf.png";
+	console.log('oeuf détruit');
+	imgEgg.onload = function(){
+	
+	graph.context.drawImage(imgEgg, parseInt(this.x)- 30, parseInt(this.y)- 32);
+		
+	graph.context.stroke();
+	graph.context.fill();
+}
+	
+}
 function refreshBoard() {
 	board.draw(graphic);
 	players.forEach(function (player) {
@@ -125,9 +171,14 @@ function refreshBoard() {
 	});
 	eggs.forEach(function (egg) {
 		egg.draw(graphic);
+	
 	})
 }
+function refreshEggsDestroyed(egg){
+	egg.drawJauneOeuf(graphic);
 
+	
+}
 function toggleInfo(connected) {
 	var overlay = document.getElementById("boardOverlay");
 	var joinButton = document.getElementById("joinButton");
@@ -197,6 +248,7 @@ function initGame(gameState) {
 		board.tiles = gameState.board.tiles;
 		board.width = gameState.board.width;
 		board.height = gameState.board.height;
+		board.img=gameState.board.imgMurSrc;
 		//board.draw(graphic);
 	}
 	console.log(board);
@@ -213,7 +265,7 @@ function initGame(gameState) {
 	}
 	if (gameState.eggs) {
 		gameState.eggs.forEach(function (newEgg) {
-			eggs[newEgg.id] = new Egg(newEgg.id, newEgg.x * 64 + 32, newEgg.y * 64 + 32, newEgg.owner, newEgg.power);
+			eggs[newEgg.id] = new Egg(newEgg.id, newEgg.x * 64 + 32, newEgg.y * 64 + 32, newEgg.owner, newEgg.power, newEgg.imgSrc);
 		});
 	}
 } 
@@ -277,13 +329,17 @@ function connectServer() {
 	});
 	ws.on('newEgg', function (newEgg) {
 		console.log('Oh no, a bomb edd has dropped');
-		console.log(newEgg);
-		eggs[newEgg.id] = new Egg(newEgg.id, newEgg.x * 64 + 32, newEgg.y * 64 + 32, newEgg.owner, newEgg.power);
+		//console.log(newEgg.imgSrc);
+
+		eggs[newEgg.id] = new Egg(newEgg.id, newEgg.x * 64 + 32, newEgg.y * 64 + 32, newEgg.owner, newEgg.power, newEgg.imgSrc);
 		//eggs[newEgg.id] = newEgg;
+		//eggs[newEgg.id].draw(graphic);
 		//eggs[newEgg.id].draw(graphic);
 	});
 	ws.on('eggExplosed', function (eggId) {
 		console.log('The egg ' + eggId + ' has explosed!');
+		//refreshEggsDestroyed(eggs[eggId]);
+	
 		delete eggs[eggId];
 		refreshBoard();
 	});
@@ -317,7 +373,7 @@ function keydown(e) {
 function init() {
 	graphic = new Graphic("boardCanvas");
 	graphic.erase();
-	board = new Board(0, 0);
+	board = new Board(0, 0, "mur.png");
 	board.draw(graphic);
 
 	connectServer();

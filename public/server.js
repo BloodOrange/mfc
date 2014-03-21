@@ -85,11 +85,11 @@ function newPlayer(pseudo, x, y) {
 }
 
 function newEgg(owner) {
-	return new Egg(idEgg.next(), owner.x, owner.y, owner.id, 2);
+	return new Egg(idEgg.next(), owner.x, owner.y, owner.id, 2, "oeuf.png");
 }
 
 function generateBoard(width, height) {
-	var board = new Board(width, height);
+	var board = new Board(width, height, "mur.png");
 	board.tiles = [
 		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 		[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
