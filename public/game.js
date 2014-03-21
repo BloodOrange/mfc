@@ -37,6 +37,45 @@ Player.prototype.draw = function (graph) {
 		
 }
 
+Player.prototype.showInfo = function (order) {
+	var playerNode = document.getElementById("player" + this.id);
+	if (playerNode == undefined) {
+		playerNode = document.createElement("div");
+		playerNode.setAttribute("id", "player" + this.id);
+		playerNode.setAttribute("class", "player");
+	} else {
+		playerNode.innerHTML = "";
+	}
+	
+	if (myplayer && myplayer.id == this.id) {
+		playerNode.setAttribute("class", "myplayer player");
+	}
+	playerNode.style.backgroundImage = "linear-gradient(to right, " + this.color +
+		" 0%, white 20%, white 100%)";
+
+	var orderNode = document.createElement("div");
+	orderNode.setAttribute("class", "playerOrder");
+	orderNode.innerHTML = order;
+	playerNode.appendChild(orderNode);
+	
+	var nameNode = document.createElement("div");
+	nameNode.setAttribute("class", "playerName");
+	nameNode.innerHTML = this.pseudo;
+	playerNode.appendChild(nameNode);
+	
+	var scoreNode = document.createElement("div");
+	scoreNode.setAttribute("class", "playerScore");
+	scoreNode.innerHTML = "" + this.score;
+	playerNode.appendChild(scoreNode);
+
+	var lifeNode = document.createElement("div");
+	lifeNode.setAttribute("class", "playerLife");
+	lifeNode.innerHTML = "" + this.life;
+	playerNode.appendChild(lifeNode);
+
+	return playerNode;
+}
+
 Player.prototype.update = function () {
 	if (this.state == 1) {
 		var directionx = this.x - this.realX;
@@ -96,6 +135,8 @@ Board.prototype.draw = function (graph) {
 		for (var x = 0; x < this.width; x++) {
 			if (this.tiles[y][x] == 1) {
 				graph.context.fillStyle = "red";
+			} else if (this.tiles[y][x] == 2) {
+				graph.context.fillStyle = "blue";
 			} else {
 				graph.context.fillStyle = "olivedrab";
 			}
@@ -139,32 +180,8 @@ function toggleInfo(connected) {
 }
 
 function addPlayerOnListView(player) {
-	var playerNode = document.createElement("div");
-	playerNode.setAttribute("id", "player" + player.id);
-	playerNode.setAttribute("class", "player");
-	if (myplayer && myplayer.id == player.id) {
-		playerNode.setAttribute("class", "myplayer player");
-	}
-	playerNode.style.backgroundImage = "linear-gradient(to right, " + player.color +
-		" 0%, white 20%, white 100%)";
-	
-	var nameNode = document.createElement("div");
-	nameNode.setAttribute("class", "playerName");
-	nameNode.innerHTML = player.pseudo;
-	playerNode.appendChild(nameNode);
-	
-	var scoreNode = document.createElement("div");
-	scoreNode.setAttribute("class", "playerScore");
-	scoreNode.innerHTML = "" + player.score;
-	playerNode.appendChild(scoreNode);
-
-	var lifeNode = document.createElement("div");
-	lifeNode.setAttribute("class", "playerLife");
-	lifeNode.innerHTML = "" + player.life;
-	playerNode.appendChild(lifeNode);
-
 	var listPlayers = document.getElementById("listPlayers");
-	listPlayers.appendChild(playerNode);
+	listPlayers.appendChild(player.showInfo(player.id + 1));
 }
 
 function clearPlayerListView() {
@@ -246,6 +263,13 @@ function connectServer() {
 		console.log(event);
 		var player = players[event.id];
 		player.moveto(event.x * 64 + 32, event.y * 64 + 32);
+	});
+	ws.on('lostLife', function (event) {
+		console.log("Lostlife");
+		console.log(event);
+		var player = players[event["id"]];
+		player.life = event["life"];
+		player.showInfo(player.id + 1);
 	});
 	ws.on('youJoin', function (newPlayer) {
 		console.log('You join the game');
