@@ -4,11 +4,14 @@ graphic = null;
 players = new Array();
 eggs = new Array();
 myplayer = null;
+var imageMur = new Image();
+var imageMurPaille=new Image();
 /*var imageMur = new Image();
 imageMur.src = "http://localhost:8000/mur.png";*/
-//var Board = common.Board;
-
-function Board(width, height, imgMurSrc){
+var Board = common.Board;
+var murSolide=new Array();
+var murPaille=new Array();
+/*function Board(width, height, imgMurSrc){
 	this.width=width;
 	this.height=height;
 	this.img = new Image();
@@ -16,7 +19,7 @@ function Board(width, height, imgMurSrc){
 	this.img.src = imgMurSrc;
 	common.Board.call(this,width, height, imgMurSrc);
 }
-Board.prototype=new common.Board();
+Board.prototype=new common.Board();*/
 function Player (id, pseudo, x, y, color, score, life, imgSrc) {
 	this.realX = x;
 	this.realY = y;
@@ -40,6 +43,7 @@ Player.prototype.moveto = function (x, y) {
 }
 
 Player.prototype.draw = function (graph) {
+
 	graph.context.drawImage(this.img, parseInt(this.realX) - 32, parseInt(this.realY) - 32);
 		
 	graph.context.stroke();
@@ -138,32 +142,58 @@ var Graphic = function (canvasName) {
 
 Board.prototype.draw = function (graph) {
 	
-	  
+
 	  
 	  
 	for (var y = 0; y < this.height; y++) {
 		for (var x = 0; x < this.width; x++) {
 			if (this.tiles[y][x] == 1) {
-<<<<<<< HEAD
-				
+				array=new Array(x,y);
+				murSolide.push(array);
 				//graph.context.fillStyle = "red";
-				//this.img.onload = function(){
-					graph.context.drawImage(this.img, x * 64, y * 64);
-					graph.context.stroke();
-					graph.context.fill();
+				//img.onload = function(){
+					
 				//}
-=======
-				graph.context.fillStyle = "red";
+
+				
 			} else if (this.tiles[y][x] == 2) {
-				graph.context.fillStyle = "blue";
->>>>>>> 98529a7c966e6335446ccedd83fbe02299bf29be
+				//graph.context.fillStyle = "blue";
+				array=new Array(x,y);
+				murPaille.push(array);
+				
+
 			} else {
 				graph.context.fillStyle = "olivedrab";
 			}
 			graph.context.fillRect(x * 64, y * 64, 64, 64);
 		}
 	}
+
+	imageMur.src="http://localhost:8000/mur.png";
+	imageMurPaille.src="http://localhost:8000/murPaille.png";
+	
+		for (var i = murSolide.length - 1; i >= 0; i--) {
+		
+			x=parseInt(murSolide[i][0])*64;
+			y=parseInt(murSolide[i][1])*64;
+			graph.context.drawImage(imageMur, x, y);
+			
+					graph.context.stroke();
+					graph.context.fill();
+					
+		};
+		for (var i = murPaille.length - 1; i >= 0; i--) {
+		
+			x=parseInt(murPaille[i][0])*64;
+			y=parseInt(murPaille[i][1])*64;
+			graph.context.drawImage(imageMurPaille, x, y);
+			
+					graph.context.stroke();
+					graph.context.fill();
+					
+		};
 }
+
 function Egg(id, x, y, owner, power, imgSrc){
 	this.realX = x;
 	this.realY = y;
@@ -210,6 +240,7 @@ Egg.prototype.drawJauneOeuf = function (graph) {
 	
 }
 function refreshBoard() {
+
 	board.draw(graphic);
 	players.forEach(function (player) {
 		player.draw(graphic);
@@ -265,14 +296,17 @@ function update() {
 }
 
 function initGame(gameState) {
+	 
 	if (gameState.board && gameState.board.tiles) {
 		board.tiles = gameState.board.tiles;
 		board.width = gameState.board.width;
 		board.height = gameState.board.height;
 		board.img=gameState.board.imgMurSrc;
-		//board.draw(graphic);
+		board.draw(graphic);
+
+	
 	}
-	console.log(board);
+	//console.log(board);
 	if (gameState.players) {
 		for (var i = 0; i < gameState.players.length; i++) {
 			var newPlayer = gameState.players[i];
@@ -425,6 +459,7 @@ function init() {
 	});
 
 	setInterval(function(){
+		delete(imageMur);
 		update();
 		refreshBoard();
     }, 16);
