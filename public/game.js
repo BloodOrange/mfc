@@ -5,6 +5,26 @@ players = new Array();
 eggs = new Array();
 myplayer = null;
 
+eggExplosed = [
+	new Image(),
+	new Image(),
+	new Image(),
+	new Image(),
+	new Image(),
+	new Image(),
+	new Image()
+];
+
+eggExplosedSrc = [
+	"egg-cross.png",
+	"egg-vertical.png",
+	"egg-horizontal.png",
+	"egg-down.png",
+	"egg-up.png",
+	"egg-right.png",
+	"egg-left.png"
+];
+
 var Board = common.Board;
 
 var host = "89.92.246.74";
@@ -34,7 +54,6 @@ Player.prototype.draw = function (graph) {
 		
 	graph.context.stroke();
 	graph.context.fill();
-		
 }
 
 Player.prototype.showInfo = function (order) {
