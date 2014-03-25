@@ -232,7 +232,7 @@ function initGame(gameState) {
 function connectServer() {
 	if (ws) return;
 
-	ws = io.connect('http://10.16.162.51:8000');
+	ws = io.connect('http://localhost:8000');
 	ws.on('connect', function () {
 		console.log("Socket opened");
 		toggleInfo(true);
@@ -247,6 +247,15 @@ function connectServer() {
 	ws.on('initGame', function (gameState) {
 		console.log(gameState);
 		initGame(gameState);
+	});
+	ws.on('breakWall', function (wall) {
+		board.tiles[wall.position[0]][wall.position[1]] = 0;
+	});
+	ws.on('changeScore', function(event) {
+		console.log(event);
+		var player = players[event["id"]];
+		player.score = event["score"];
+		player.showInfo(player.id + 1);
 	});
 	ws.on('newPlayer', function (newPlayer) {
 		console.log("New player");

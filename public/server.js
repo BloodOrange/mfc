@@ -54,6 +54,14 @@ var colors = [
 	"#7777ff"
 ]
 
+var images = [
+	"pouletOrange.png",
+	"pouletVert.png",
+	"pouletBleuFonce.png",
+	"pouletJaune.png",
+	"pouletRose.png"
+]
+
 var players = new Array();
 var eggs = new Array();
 
@@ -81,7 +89,7 @@ var idEgg = new Id(0, 100, eggs);
 function Player(pseudo, x, y) {
 	var id = idPlayer.next();
 	this.lastActionTime = 0;
-	common.Player.call(this, id, pseudo, x, y, colors[id], 0, 5, "pouletOrange.png");
+	common.Player.call(this, id, pseudo, x, y, colors[id], 0, 5, images[id]);
 }
 Player.prototype = new common.Player();
 
@@ -148,8 +156,10 @@ var board = generateBoard(11, 11);
 
 function impactedByEgg(idEgg) {
 	var egg = eggs[idEgg];
-
+	var player = players[egg.owner];
+	
 	var dead = new Array();
+	var wallBreaking = new Array();
 
 	var wallRight = false;
 	var wallLeft = false;
@@ -160,11 +170,18 @@ function impactedByEgg(idEgg) {
 		if (!wallRight) {
 			if (board.tiles[egg.y][egg.x + i]) {
 				wallRight = true;
+				if (board.tiles[egg.y][egg.x + i] == 2) {
+					board.tiles[egg.y][egg.x + i] = 0;
+					wallBreaking.push([egg.y, egg.x + i]);
+				}
 			} else {
 				for (index in players) {
 					if (players[index].x == egg.x + i && players[index].y == egg.y) {
-						if (dead.indexOf(players[i]) == -1)
+						if (dead.indexOf(players[i]) == -1) {
 							dead.push(players[index]);
+							if (index != player.id)
+								player.score += 10;
+						}
 					}
 				}
 			}
@@ -172,11 +189,18 @@ function impactedByEgg(idEgg) {
 		if (!wallLeft) {
 			if (board.tiles[egg.y][egg.x - i]) {
 				wallLeft = true;
+				if (board.tiles[egg.y][egg.x - i] == 2) {
+					board.tiles[egg.y][egg.x - i] = 0;
+					wallBreaking.push([egg.y, egg.x - i]);
+				}
 			} else {
 				for (index in players) {
 					if (players[index].x == egg.x - i && players[index].y == egg.y) {
-						if (dead.indexOf(players[i]) == -1)						
+						if (dead.indexOf(players[i]) == -1)	{
 							dead.push(players[index]);
+							if (index != player.id)
+								player.score += 10;
+						}
 					}
 				}
 			}
@@ -184,11 +208,18 @@ function impactedByEgg(idEgg) {
 		if (!wallUp) {
 			if (board.tiles[egg.y - i][egg.x]) {
 				wallUp = true;
+				if (board.tiles[egg.y -i][egg.x] == 2) {
+					board.tiles[egg.y -i][egg.x] = 0;
+					wallBreaking.push([egg.y - i, egg.x]);
+				}
 			} else {
 				for (index in players) {
 					if (players[index].x == egg.x && players[index].y == egg.y - i) {
-						if (dead.indexOf(players[i]) == -1)						
+						if (dead.indexOf(players[i]) == -1)	{
 							dead.push(players[index]);
+							if (index != player.id)
+								player.score += 10;
+						}
 					}
 				}
 			}
@@ -196,18 +227,25 @@ function impactedByEgg(idEgg) {
 		if (!wallDown) {
 			if (board.tiles[egg.y + i][egg.x]) {
 				wallDown = true;
+				if (board.tiles[egg.y + i][egg.x] == 2) {
+					board.tiles[egg.y + i][egg.x] = 0;
+					wallBreaking.push([egg.y + i, egg.x]);
+				}
 			} else {
 				for (index in players) {
 					if (players[index].x == egg.x && players[index].y == egg.y + i) {
-						if (dead.indexOf(players[i]) == -1)						
+						if (dead.indexOf(players[i]) == -1)	{
 							dead.push(players[index]);
+							if (index != player.id)
+								player.score += 10;
+						}
 					}
 				}
 			}
 		}
 	}
 	
-	return dead;
+	return {"dead": dead, "wall": wallBreaking};
 }
 
 var io = require('socket.io').listen(server);
@@ -237,7 +275,9 @@ io.sockets.on('connection', function (socket) {
 			eggs[egg.id] = egg;
 			// use clearInterval(explosedTimer) to desarm timer
 			var explosedTimer = setTimeout(function () {
-				var deadPlayers = impactedByEgg(egg.id);
+				var data = impactedByEgg(egg.id);
+				var deadPlayers = data["dead"];
+				var walls = data["wall"];
 				socket.broadcast.emit('eggExplosed', egg.id);
 				socket.emit('eggExplosed', egg.id);
 
@@ -252,6 +292,14 @@ io.sockets.on('connection', function (socket) {
 						socket.broadcast.emit("lostLife", message);
 					}
 				});
+				walls.forEach(function (wall) {
+					socket.emit("breakWall", {"position": wall});
+					socket.broadcast.emit("breakWall", {"position": wall});
+				})
+				var message = {"id": player.id, "score": player.score};
+				console.log(message);
+				socket.broadcast.emit("changeScore", message);
+				socket.emit("changeScore", message);
 				delete eggs[egg.id];
 			}, 2000);
 
