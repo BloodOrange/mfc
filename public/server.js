@@ -83,8 +83,8 @@ var Id = function (start, max, list) {
 	}
 }
 
-var idPlayer = new Id(0, 100, players);
-var idEgg = new Id(0, 100, eggs);
+var idPlayer = new Id(0, nbPlayerMax, players);
+var idEgg = new Id(0, nbEggsMax, eggs);
 
 function Player(pseudo, x, y) {
 	var id = idPlayer.next();
@@ -283,13 +283,16 @@ io.sockets.on('connection', function (socket) {
 
 				deadPlayers.forEach(function (dead) {
 					dead.life -= 1
-					if (dead.life < 100) {
+					if (dead.life > 0) {
 						var message = {
 							"id": dead.id,
 							"life": dead.life
 						}
 						socket.emit("lostLife", message);
 						socket.broadcast.emit("lostLife", message);
+					} else {
+						socket.emit("dead", dead.id);
+						socket.broadcast.emit("dead", dead.id);
 					}
 				});
 				walls.forEach(function (wall) {
@@ -319,6 +322,12 @@ io.sockets.on('connection', function (socket) {
 		socket.emit('youJoin', player);
 	});
 	socket.on('disconnect', function () {
+		if (player != null) {
+			// Supprimer player des oeufs
+			delete players[player.id];
+			socket.broadcast.emit('removePlayer', player.id);
+			player = null;
+		}
 		console.log('End connection');
 	});
 });

@@ -1,12 +1,18 @@
+<!doctype html>
 <html>
   <head>
 	<title>Massive Chicken Fry</title>
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="common.js"></script>
 	<script src="game.js"></script>
+	<link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+		<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:700' rel='stylesheet' type='text/css'>
 	<link href="style.css" rel="stylesheet" type="text/css">
   </head>
   <body>
+	  <div id="title">
+		  <span id="logo">&rsaquo;</span><span id="massive">Massive</span><span id="chicken">Chicken</span><span id="fry">Fry</span>
+	  </div>
 	<div id="container">
 	  <div id="board">
 		<div id="boardOverlay">
@@ -19,13 +25,19 @@
 		  Voyez utiliser un vrai navigateur ! Bande de looser !
 		</canvas>
 	  </div>
-	  <div id="connection">
+	  <div id="info">
 		<form id="join">
-		  <input id="login" placeholder="Enter your login..." />
-		  <button id="joinButton" disabled="true" type="submit">Join</button>
+		  <input id="login" placeholder="Entrer votre pseudo..." />
+		  <a id="joinButton" href="javascript:(0)">Rejoindre</a>
 		</form>
-	  </div>
-	  <div id="listPlayers">
+		<div id="listPlayers">
+			<div id="headPlayer">
+				<div id="headOrder"></div>
+				<div id="headName">Pseudo</div>
+				<div id="headLife">Vie</div>
+				<div id="headScore">Score</div>
+			</div>
+		</div>
 	  </div>
 	</div>
   </body>

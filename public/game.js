@@ -6,7 +6,8 @@ eggs = new Array();
 myplayer = null;
 
 var Board = common.Board;
-var Egg = common.Egg;
+
+var host = "89.92.246.74";
 
 function Player (id, pseudo, x, y, color, score, life, imgSrc) {
 	this.realX = x;
@@ -15,9 +16,8 @@ function Player (id, pseudo, x, y, color, score, life, imgSrc) {
 	this.state = 0; // 0 - WAITING; 1 - WALKING
 	this.speed = 10;
 	this.img = new Image();
-	var imgSrc = "http://localhost:8000/" + imgSrc;
+	var imgSrc = "http://" + host + ":8000/" + imgSrc;
 	this.img.src = imgSrc;
-	//this.img.src = imgSrc;
 
 	common.Player.call(this, id, pseudo, x, y, color, score, life, imgSrc);
 }
@@ -50,12 +50,13 @@ Player.prototype.showInfo = function (order) {
 	if (myplayer && myplayer.id == this.id) {
 		playerNode.setAttribute("class", "myplayer player");
 	}
-	playerNode.style.backgroundImage = "linear-gradient(to right, " + this.color +
-		" 0%, white 20%, white 100%)";
+	//playerNode.style.backgroundImage = "linear-gradient(to right, " + this.color +
+	//" 0%, white 20%, white 100%)";
 
 	var orderNode = document.createElement("div");
 	orderNode.setAttribute("class", "playerOrder");
 	orderNode.innerHTML = order;
+	orderNode.style.borderColor = this.color;
 	playerNode.appendChild(orderNode);
 	
 	var nameNode = document.createElement("div");
@@ -63,15 +64,15 @@ Player.prototype.showInfo = function (order) {
 	nameNode.innerHTML = this.pseudo;
 	playerNode.appendChild(nameNode);
 	
-	var scoreNode = document.createElement("div");
-	scoreNode.setAttribute("class", "playerScore");
-	scoreNode.innerHTML = "" + this.score;
-	playerNode.appendChild(scoreNode);
-
 	var lifeNode = document.createElement("div");
 	lifeNode.setAttribute("class", "playerLife");
 	lifeNode.innerHTML = "" + this.life;
 	playerNode.appendChild(lifeNode);
+
+	var scoreNode = document.createElement("div");
+	scoreNode.setAttribute("class", "playerScore");
+	scoreNode.innerHTML = "" + this.score;
+	playerNode.appendChild(scoreNode);
 
 	return playerNode;
 }
@@ -121,6 +122,7 @@ var Graphic = function (canvasName) {
 	this.context = this.canvas.getContext("2d");
 
 	this.erase = function () {
+	console.log("ici");
 		this.context.fillStyle = "olivedrab";
 		this.context.fillRect(0, 0, this.width, this.height);
 	}
@@ -145,55 +147,111 @@ Board.prototype.draw = function (graph) {
 	}
 }
 
+function Egg(id, x, y, owner, power) {
+	this.img = new Image();
+	var imgSrc = "http://" + host + ":8000/egg.png";
+	this.img.src = imgSrc;
+	
+	common.Egg.call(this, id, x, y, owner, power);
+}
+Egg.prototype = new common.Egg();
+
 Egg.prototype.draw = function (graph) {
-	graph.context.fillStyle = "white";
+	/*graph.context.fillStyle = "white";
 	graph.context.beginPath();
 	graph.context.arc(this.x, this.y, 24, 0, 2 * Math.PI);
 	graph.context.stroke();
+	graph.context.fill();*/
+	graph.context.drawImage(this.img, parseInt(this.x) - 32, parseInt(this.y) - 32);
+		
+	graph.context.stroke();
 	graph.context.fill();
+
 }
 
 function refreshBoard() {
 	board.draw(graphic);
 	players.forEach(function (player) {
-		player.draw(graphic);
+		if (player != undefined)
+			player.draw(graphic);
 	});
 	eggs.forEach(function (egg) {
-		egg.draw(graphic);
+		if (egg != undefined)
+			egg.draw(graphic);
 	})
+}
+
+function sortPlayersByScore() {
+	var sortedPlayer = new Array();
+
+	for (var i = 0; i < players.length; i++) {
+		if (players[i] != undefined) {
+			sortedPlayer.push(players[i]);
+		}
+	}
+
+	sortedPlayer.sort(function (a, b) {
+		if (a.score > b.score)
+			return -1;
+		else if (a.score < b.score)
+			return 1;
+		else
+			return 0;
+	});
+	return sortedPlayer;
 }
 
 function toggleInfo(connected) {
 	var overlay = document.getElementById("boardOverlay");
 	var joinButton = document.getElementById("joinButton");
-	var connection = document.getElementById("connection");
+	var join = document.getElementById("join");
 
 	if (connected) {
 		overlay.style.display = "none";
-		connection.style.display = "block";
+		join.style.display = "block";
 		joinButton.disabled = false;
 	} else {
 		overlay.style.display = "block";
-		connection.style.display = "none";
+		join.style.display = "none";
 		joinButton.display = true;
 	}
 }
 
-function addPlayerOnListView(player) {
+function addPlayerOnListView(pos, player) {
 	var listPlayers = document.getElementById("listPlayers");
-	listPlayers.appendChild(player.showInfo(player.id + 1));
+	if (player != undefined)
+		listPlayers.appendChild(player.showInfo(pos));
 }
 
 function clearPlayerListView() {
 	var listPlayers = document.getElementById("listPlayers");
+	var head = document.createElement("div");
+	head.setAttribute("id", "headPlayer");
+	var headOrder = document.createElement("div");
+	headOrder.setAttribute("id", "headOrder");
+	head.appendChild(headOrder);
+	var headName = document.createElement("div");
+	headName.setAttribute("id", "headName");
+	headName.innerHTML = "Pseudo";
+	head.appendChild(headName);
+	var headLife = document.createElement("div");
+	headLife.setAttribute("id", "headLife");
+	headLife.innerHTML = "Vie";
+	head.appendChild(headLife);
+	var headScore = document.createElement("div");
+	headScore.setAttribute("id", "headScore");
+	headScore.innerHTML = "Score";
+	head.appendChild(headScore);
 	listPlayers.innerHTML = "";
+	listPlayers.appendChild(head);
 }
-
 
 function updatePlayersListView() {
 	clearPlayerListView();
-	for (var i = 0; i < players.length; i++) {
-		addPlayerOnListView(players[i]);
+	var sortedPlayer = sortPlayersByScore();
+	for (var i = 0; i < sortedPlayer.length; i++) {
+		if (sortedPlayer[i] != undefined)
+			addPlayerOnListView(i + 1, sortedPlayer[i]);
 	}
 }
 
@@ -214,25 +272,28 @@ function initGame(gameState) {
 	if (gameState.players) {
 		for (var i = 0; i < gameState.players.length; i++) {
 			var newPlayer = gameState.players[i];
+			if (newPlayer == undefined)
+				continue;
 			var player = new Player(newPlayer.id, newPlayer.pseudo,
 									newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
 									newPlayer.color, newPlayer.score, newPlayer.life, newPlayer.imgSrc);
 			//player.draw(graphic);
 			players[player.id] = player;
-			addPlayerOnListView(player);
 		}
 	}
 	if (gameState.eggs) {
 		gameState.eggs.forEach(function (newEgg) {
-			eggs[newEgg.id] = new Egg(newEgg.id, newEgg.x * 64 + 32, newEgg.y * 64 + 32, newEgg.owner, newEgg.power);
+			if (newEgg != undefined)
+				eggs[newEgg.id] = new Egg(newEgg.id, newEgg.x * 64 + 32, newEgg.y * 64 + 32, newEgg.owner, newEgg.power);
 		});
 	}
+	updatePlayersListView();
 } 
 
 function connectServer() {
 	if (ws) return;
 
-	ws = io.connect('http://localhost:8000');
+	ws = io.connect('http://' + host + ':8000');
 	ws.on('connect', function () {
 		console.log("Socket opened");
 		toggleInfo(true);
@@ -251,11 +312,16 @@ function connectServer() {
 	ws.on('breakWall', function (wall) {
 		board.tiles[wall.position[0]][wall.position[1]] = 0;
 	});
+	ws.on('removePlayer', function (playerid) {
+		delete players[playerid];
+		updatePlayersListView();
+	});
 	ws.on('changeScore', function(event) {
 		console.log(event);
 		var player = players[event["id"]];
 		player.score = event["score"];
 		player.showInfo(player.id + 1);
+		updatePlayersListView();
 	});
 	ws.on('newPlayer', function (newPlayer) {
 		console.log("New player");
@@ -266,7 +332,8 @@ function connectServer() {
 								newPlayer.imgSrc);
 		//player.draw(graphic);
 		players[player.id] = player;
-		addPlayerOnListView(player);
+		//addPlayerOnListView(player);
+		updatePlayersListView();
 	});
 	ws.on('move-to', function (event) {
 		console.log(event);
@@ -284,10 +351,10 @@ function connectServer() {
 		console.log('You join the game');
 		console.log(newPlayer);
 		var joinButton = document.getElementById("joinButton");
-		var connection = document.getElementById("connection");
+		var join = document.getElementById("join");
 
 		joinButton.disabled = false;
-		connection.style.display = "none";
+		join.style.display = "none";
 
 		myplayer = new Player(newPlayer.id, newPlayer.pseudo,
 							  newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
@@ -295,7 +362,8 @@ function connectServer() {
 							 newPlayer.imgSrc);
 		//myplayer.draw(graphic);
 		players[myplayer.id] = myplayer;
-		addPlayerOnListView(myplayer);
+		//addPlayerOnListView(myplayer);
+		updatePlayersListView();
 
 		var canvas = document.getElementById("boardCanvas");
 		canvas.tabIndex = 1000;
@@ -312,7 +380,6 @@ function connectServer() {
 	ws.on('eggExplosed', function (eggId) {
 		console.log('The egg ' + eggId + ' has explosed!');
 		delete eggs[eggId];
-		refreshBoard();
 	});
 	ws.on('error', function (e) {
 		console.log("Socket error: " + e);
@@ -341,6 +408,17 @@ function keydown(e) {
 	return true;
 }
 
+function joinParty() {
+	if (ws) {
+		var login = document.getElementById("login");
+		if (login.value != "") {
+			ws.emit("joinParty", login.value);
+		} else {
+			alert("Vous devez rentrer un pseudo !");
+		}		 
+	}
+}
+
 function init() {
 	graphic = new Graphic("boardCanvas");
 	graphic.erase();
@@ -352,15 +430,11 @@ function init() {
 	var join = document.getElementById("join");
 	join.addEventListener("submit", function (e) {
 		e.preventDefault();
-		if (ws) {
-			var login = document.getElementById("login");
-			if (login.value != "") {
-				ws.emit("joinParty", login.value);
-			} else {
-				alert("Vous devez rentrer un pseudo !");
-			}		 
-		}
+		joinParty();
 	}, false);
+
+	var joinButton = document.getElementById("joinButton");
+	joinButton.addEventListener("click", joinParty);
 
 	var connect = document.getElementById("connect");
 	connect.addEventListener("click", function (e) {
