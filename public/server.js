@@ -127,13 +127,11 @@ Player.prototype.move = function (socket, key) {
 };
 
 function newEgg(owner) {
-
-	return new Egg(idEgg.next(), owner.x, owner.y, owner.id, 2, "oeuf.png");
-
+	return new Egg(idEgg.next(), owner.x, owner.y, owner.id, 4);
 }
 
-function generateBoard(width, height, img) {
-	var board = new Board(width, height, img);
+function generateBoard(width, height) {
+	var board = new Board(width, height);
 	board.tiles = [
 		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 		[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -154,7 +152,7 @@ function isWalkable(board, x, y) {
 	return !board.tiles[y][x];
 }
 
-var board = generateBoard(11, 11, "mur.png");
+var board = generateBoard(11, 11);
 
 function impactedByEgg(idEgg) {
 	var egg = eggs[idEgg];
@@ -335,4 +333,3 @@ io.sockets.on('connection', function (socket) {
 });
 
 server.listen(8000);
-
