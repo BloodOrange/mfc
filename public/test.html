@@ -1,0 +1,251 @@
+<html>
+	<head>
+		<title>Ceci n'est qu'un test</title>
+		<script>
+		 function invertTwoPlayers(div1, div2) {
+			 var distance = div2.clientHeight;
+
+			 var parent = div1.parentNode;
+			 parent.insertBefore(div1, div2);
+		 }
+
+		 window.onload = function () {
+			 var myplayer = document.getElementById("myplayer");
+			 var prev = document.getElementById("prevPlayer");
+			 var joinValid = document.getElementById("joinValid");
+			 joinValid.addEventListener("click", function () {
+				 invertTwoPlayers(myplayer, prev);
+			 });
+		 }
+		</script>
+		<style type="text/css">
+		 * {
+			 font-family: "Arial";
+		 }
+		 #info {
+		 }
+		 #join {
+			 overflow: hidden;
+			 width: 300px;
+		 }
+		 #join:focus {
+			 box-shadow: 0px 0px 20px rgba(66, 133, 244, 255);
+		 }
+		 #joinField{
+			 margin: 0px;
+			 float: left;
+			 height: 26px;
+			 border: 3px solid rgba(66, 133, 244, 255);
+		 }
+		 #joinField:focus {
+			 box-shadow: 0px 0px 20px rgba(66, 133, 244, 255);
+			 outline: 0;
+		 }
+		 #joinValid {
+			 margin: 0px;
+			 padding-right: 3px;
+			 float: left;
+			 height: 20px;
+			 border: 3px solid rgba(66, 133, 244, 255);
+			 background-color: rgba(66, 133, 244, 255);
+			 color: white;
+			 text-decoration: none;
+		 }
+		 #joinValid:active {
+			 box-shadow-color: rgba(66, 133, 244, 255);
+		 }
+		 .player {
+			 overflow: hidden;
+			 clear: both;
+		 }
+		 .numPlayer {
+			 float: left;
+
+			 width: 2em;
+			 border-right: 1px solid rgba(118, 167, 250, 255);
+		 }
+		 .namePlayer {
+			 float: left;
+			 width: 10em;
+			 padding-left: 5px;
+			 border-right: 1px solid rgba(118, 167, 250, 255);
+		 }
+		 .lifePlayer {
+			 float: left;
+			 width: 2em;
+			 padding-left: 5px;
+			 border-right: 1px solid rgba(118, 167, 250, 255);
+		 }
+		 .scorePlayer {
+			 float: left;
+			 padding-left: 5px;
+		 }
+		 #listPlayers {
+			 margin-top: 10px;
+		 }
+		 #white-shadow {
+			 position: relative;
+			 left: 0px;
+			 bottom: 50px;
+			 background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 255));
+			 height: 50px;
+			 width: 500px;
+		 }
+		 #myplayer {
+			 text-decoration: underline;
+		 }
+		 .test {
+			 -webkit-animation-duration: 3s;
+			 -webkit-animation-name: swap;
+		 }
+
+		 @-webkit-key-frames swap {
+			 from {
+				 margin-left: 100%;
+				 width: 300%
+			 }
+			 to {
+				 margin-left: 0%;
+				 width: 100%;
+			 }
+		 }
+		</style>
+	</head>
+	<body>
+		<div id="info">
+			<div id="join">
+				<input type="text" id="joinField" />
+				<a id="joinValid" href="javascript:(0)">Rejoindre</a>
+			</div>
+			<div id="listPlayers">
+				<div id="prevPlayer" class="player test">
+					<div class="numPlayer">
+						1
+					</div>
+					<div class="namePlayer">
+						cactus
+					</div>
+					<div class="lifePlayer">
+						5
+					</div>
+					<div class="scorePlayer">
+						1000
+					</div>
+				</div>
+				<div class="player">
+					<div class="numPlayer">
+						2
+					</div>
+					<div class="namePlayer">
+						cactus
+					</div>
+					<div class="lifePlayer">
+						5
+					</div>
+					<div class="scorePlayer">
+						1000
+					</div>
+				</div>
+				<div class="player">
+					<div class="numPlayer">
+						3
+					</div>
+					<div class="namePlayer">
+						cactus
+					</div>
+					<div class="lifePlayer">
+						5
+					</div>
+					<div class="scorePlayer">
+						1000
+					</div>
+				</div>
+				<div class="player">
+					<div class="numPlayer">
+						4
+					</div>
+					<div class="namePlayer">
+						cactus
+					</div>
+					<div class="lifePlayer">
+						5
+					</div>
+					<div class="scorePlayer">
+						1000
+					</div>
+				</div>
+				<div class="player">
+					<div class="numPlayer">
+						5
+					</div>
+					<div class="namePlayer">
+						cactus
+					</div>
+					<div class="lifePlayer">
+						5
+					</div>
+					<div class="scorePlayer">
+						1000
+					</div>
+				</div>
+				<div class="player">
+					<div class="numPlayer">
+						6
+					</div>
+					<div class="namePlayer">
+						cactus
+					</div>
+					<div class="lifePlayer">
+						5
+					</div>
+					<div class="scorePlayer">
+						1000
+					</div>
+				</div>
+				<div id="myplayer" class="player">
+					<div class="numPlayer">
+						7
+					</div>
+					<div class="namePlayer">
+						cactus
+					</div>
+					<div class="lifePlayer">
+						5
+					</div>
+					<div class="scorePlayer">
+						1000
+					</div>
+				</div>
+				<div class="player">
+					<div class="numPlayer">
+						8
+					</div>
+					<div class="namePlayer">
+						cactus
+					</div>
+					<div class="lifePlayer">
+						5
+					</div>
+					<div class="scorePlayer">
+						1000
+					</div>
+				</div>
+				<div class="player">
+					<div class="numPlayer">
+						9
+					</div>
+					<div class="namePlayer">
+						cactus
+					</div>
+					<div class="lifePlayer">
+						5
+					</div>
+					<div class="scorePlayer">
+						1000
+					</div>
+				</div>
+				<div id="white-shadow"></div>
+			</div>
+		</div>
+	</body>
+</html>

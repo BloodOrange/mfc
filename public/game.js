@@ -4,30 +4,106 @@ graphic = null;
 players = new Array();
 eggs = new Array();
 myplayer = null;
+boardExplosed = null;
 
-eggExplosed = [
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image()
-];
+var host = "10.16.160.19";
 
-eggExplosedSrc = [
-	"egg-cross.png",
-	"egg-vertical.png",
-	"egg-horizontal.png",
-	"egg-down.png",
-	"egg-up.png",
-	"egg-right.png",
-	"egg-left.png"
-];
+function BoardExplosed(width, height) {
+	this.eggExplosed = [
+		new Image(),
+		new Image(),
+		new Image(),
+		new Image(),
+		new Image(),
+		new Image(),
+		new Image()
+	];
 
-var Board = common.Board;
+	var eggExplosedSrc = [
+		"egg-cross.png",
+		"egg-vertical.png",
+		"egg-horizontal.png",
+		"egg-down.png",
+		"egg-up.png",
+		"egg-right.png",
+		"egg-left.png"
+	];
 
-var host = "89.92.246.74";
+	for (var i = 0; i < this.eggExplosed.length; i++) {
+		this.eggExplosed[i].src = "http://" + host + ":8000/" + eggExplosedSrc[i];
+	}
+
+	common.Board.call(this, width, height);
+	this.changeSize(width, height);
+}
+BoardExplosed.prototype = new common.Board();
+
+BoardExplosed.prototype.changeSize = function (width, height) {
+	this.tiles = new Array();
+	for (var y = 0; y < height; y++) {
+		this.tiles[y] = new Array();
+
+		for (var x = 0; x < width; x++) {
+			this.tiles[y][x] = [-1, 0]; // [imageIndex, last (nb of 16ms)]
+		}
+	}
+	this.width = width;
+	this.height = height;
+}
+
+BoardExplosed.prototype.addExplosedZone = function (zone) {
+	for (var y = 0; y < this.height; y++) {
+		for (var x = 0; x < this.width; x++) {
+			if (zone[y][x] != -1) {
+				this.tiles[y][x] = [zone[y][x], 60];
+			}
+		}
+	}
+}
+
+BoardExplosed.prototype.draw = function (graph) {
+	for (var y = 0; y < this.height; y++) {
+		for (var x = 0; x < this.width; x++) {
+			var egg = this.tiles[y][x];
+			if (egg[0] != -1 && egg[1] > 0) {
+				graph.context.drawImage(this.eggExplosed[egg[0]],
+										x * 64, y * 64);
+		
+				graph.context.stroke();
+				graph.context.fill();
+
+				egg[1]--;
+				if (egg[1] == 0) {
+					egg[0] = -1;
+				}
+			}
+		}
+	}
+}
+
+function Board(width, height) {
+	common.Board.call(this, width, height);
+}
+Board.prototype = new common.Board();
+
+Board.prototype.draw = function (graph) {
+	/*var image = new Image();
+	  image.src = "file.jpg";
+	  
+	  graph.context.drawImage(image, 50, 50);*/
+	for (var y = 0; y < this.height; y++) {
+		for (var x = 0; x < this.width; x++) {
+			if (this.tiles[y][x] == 1) {
+				graph.context.fillStyle = "red";
+			} else if (this.tiles[y][x] == 2) {
+				graph.context.fillStyle = "blue";
+			} else {
+				graph.context.fillStyle = "olivedrab";
+			}
+			graph.context.fillRect(x * 64, y * 64, 64, 64);
+		}
+	}
+}
 
 function Player (id, pseudo, x, y, color, score, life, imgSrc) {
 	this.realX = x;
@@ -147,25 +223,6 @@ var Graphic = function (canvasName) {
 	}
 }
 
-Board.prototype.draw = function (graph) {
-	/*var image = new Image();
-	  image.src = "file.jpg";
-	  
-	  graph.context.drawImage(image, 50, 50);*/
-	for (var y = 0; y < this.height; y++) {
-		for (var x = 0; x < this.width; x++) {
-			if (this.tiles[y][x] == 1) {
-				graph.context.fillStyle = "red";
-			} else if (this.tiles[y][x] == 2) {
-				graph.context.fillStyle = "blue";
-			} else {
-				graph.context.fillStyle = "olivedrab";
-			}
-			graph.context.fillRect(x * 64, y * 64, 64, 64);
-		}
-	}
-}
-
 function Egg(id, x, y, owner, power) {
 	this.img = new Image();
 	var imgSrc = "http://" + host + ":8000/egg.png";
@@ -194,6 +251,7 @@ function refreshBoard() {
 		if (player != undefined)
 			player.draw(graphic);
 	});
+	boardExplosed.draw(graphic);
 	eggs.forEach(function (egg) {
 		if (egg != undefined)
 			egg.draw(graphic);
@@ -285,6 +343,7 @@ function initGame(gameState) {
 		board.tiles = gameState.board.tiles;
 		board.width = gameState.board.width;
 		board.height = gameState.board.height;
+		boardExplosed.changeSize(board.width, board.height);
 		//board.draw(graphic);
 	}
 	console.log(board);
@@ -396,9 +455,10 @@ function connectServer() {
 		//eggs[newEgg.id] = newEgg;
 		//eggs[newEgg.id].draw(graphic);
 	});
-	ws.on('eggExplosed', function (eggId) {
-		console.log('The egg ' + eggId + ' has explosed!');
-		delete eggs[eggId];
+	ws.on('eggExplosed', function (event) {
+		console.log('The egg ' + event["id"] + ' has explosed!');
+		boardExplosed.addExplosedZone(event["zone"]);
+		delete eggs[event["id"]];
 	});
 	ws.on('error', function (e) {
 		console.log("Socket error: " + e);
@@ -442,7 +502,7 @@ function init() {
 	graphic = new Graphic("boardCanvas");
 	graphic.erase();
 	board = new Board(0, 0);
-	board.draw(graphic);
+	boardExplosed = new BoardExplosed(0, 0);
 
 	connectServer();
 	

@@ -166,6 +166,15 @@ function impactedByEgg(idEgg) {
 	var wallUp = false;
 	var wallDown = false;
 
+	var zone = new Array();
+	for (var y = 0; y < board.height; y++) {
+		zone[y] = new Array();
+		
+		for (var x = 0; x < board.width; x++) {
+			zone[y][x] = -1;
+		}
+	}
+
 	for (var i = 0; i < egg.power; i++) {
 		if (!wallRight) {
 			if (board.tiles[egg.y][egg.x + i]) {
@@ -173,6 +182,8 @@ function impactedByEgg(idEgg) {
 				if (board.tiles[egg.y][egg.x + i] == 2) {
 					board.tiles[egg.y][egg.x + i] = 0;
 					wallBreaking.push([egg.y, egg.x + i]);
+
+					zone[egg.y][egg.x + i] = 5;
 				}
 			} else {
 				for (index in players) {
@@ -184,6 +195,14 @@ function impactedByEgg(idEgg) {
 						}
 					}
 				}
+
+				if (i == 0) {
+					zone[egg.y][egg.x] = 0;
+				} else if (i == egg.power - 1) {
+					zone[egg.y][egg.x + i] = 5;
+				} else {
+					zone[egg.y][egg.x + i] = 2;
+				}
 			}
 		}
 		if (!wallLeft) {
@@ -192,6 +211,8 @@ function impactedByEgg(idEgg) {
 				if (board.tiles[egg.y][egg.x - i] == 2) {
 					board.tiles[egg.y][egg.x - i] = 0;
 					wallBreaking.push([egg.y, egg.x - i]);
+
+					zone[egg.y][egg.x - i] = 6;
 				}
 			} else {
 				for (index in players) {
@@ -203,6 +224,14 @@ function impactedByEgg(idEgg) {
 						}
 					}
 				}
+
+				if (i == 0) {
+					zone[egg.y][egg.x] = 0;
+				} else if (i == egg.power - 1) {
+					zone[egg.y][egg.x - i] = 6;
+				} else {
+					zone[egg.y][egg.x - i] = 2;
+				}
 			}
 		}
 		if (!wallUp) {
@@ -211,6 +240,8 @@ function impactedByEgg(idEgg) {
 				if (board.tiles[egg.y -i][egg.x] == 2) {
 					board.tiles[egg.y -i][egg.x] = 0;
 					wallBreaking.push([egg.y - i, egg.x]);
+
+					zone[egg.y - i][egg.x] = 4;
 				}
 			} else {
 				for (index in players) {
@@ -222,6 +253,14 @@ function impactedByEgg(idEgg) {
 						}
 					}
 				}
+
+				if (i == 0) {
+					zone[egg.y][egg.x] = 0;
+				} else if (i == egg.power - 1) {
+					zone[egg.y - i][egg.x] = 4;
+				} else {
+					zone[egg.y - i][egg.x] = 1;
+				}
 			}
 		}
 		if (!wallDown) {
@@ -230,6 +269,8 @@ function impactedByEgg(idEgg) {
 				if (board.tiles[egg.y + i][egg.x] == 2) {
 					board.tiles[egg.y + i][egg.x] = 0;
 					wallBreaking.push([egg.y + i, egg.x]);
+
+					zone[egg.y + i][egg.x] = 3;
 				}
 			} else {
 				for (index in players) {
@@ -241,11 +282,19 @@ function impactedByEgg(idEgg) {
 						}
 					}
 				}
+
+				if (i == 0) {
+					zone[egg.y][egg.x] = 0;
+				} else if (i == egg.power - 1) {
+					zone[egg.y + i][egg.x] = 3;
+				} else {
+					zone[egg.y + i][egg.x] = 1;
+				}
 			}
 		}
 	}
 	
-	return {"dead": dead, "wall": wallBreaking};
+	return {"dead": dead, "wall": wallBreaking, "zone": zone};
 }
 
 var io = require('socket.io').listen(server);
@@ -278,8 +327,10 @@ io.sockets.on('connection', function (socket) {
 				var data = impactedByEgg(egg.id);
 				var deadPlayers = data["dead"];
 				var walls = data["wall"];
-				socket.broadcast.emit('eggExplosed', egg.id);
-				socket.emit('eggExplosed', egg.id);
+
+				var message = {"id": egg.id, "zone": data["zone"]};
+				socket.broadcast.emit('eggExplosed', message);
+				socket.emit('eggExplosed', message);
 
 				deadPlayers.forEach(function (dead) {
 					dead.life -= 1
@@ -299,7 +350,7 @@ io.sockets.on('connection', function (socket) {
 					socket.emit("breakWall", {"position": wall});
 					socket.broadcast.emit("breakWall", {"position": wall});
 				})
-				var message = {"id": player.id, "score": player.score};
+				message = {"id": player.id, "score": player.score};
 				console.log(message);
 				socket.broadcast.emit("changeScore", message);
 				socket.emit("changeScore", message);
