@@ -6,7 +6,7 @@ eggs = new Array();
 myplayer = null;
 boardExplosed = null;
 
-var host = "10.16.160.19";
+var host = "mfc.lo";
 
 function BoardExplosed(width, height) {
 	this.eggExplosed = [
