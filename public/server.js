@@ -7,7 +7,7 @@ var common = require('./common');
 var Board = common.Board;
 var Egg = common.Egg;
 
-var nbPlayerMax = 10;
+var nbPlayerMax = 5;
 var nbEggsMax = 1000;
 
 var mime = {
@@ -72,12 +72,16 @@ var Id = function (start, max, list) {
 	this.list = list;
 
 	this.next = function () {
-		if (this.id > this.max)
+		if (this.id >= this.max)
 			this.id = this.start;
+		var begin = this.id;
 		while (list[this.id] != undefined) {
 			this.id++;
-			if (this.id > this.max)
+			if (this.id >= this.max)
 				this.id = this.start;
+			if (this.id == begin) {
+				return -1;
+			}
 		} 
 		return this.id++;
 	}
@@ -85,6 +89,34 @@ var Id = function (start, max, list) {
 
 var idPlayer = new Id(0, nbPlayerMax, players);
 var idEgg = new Id(0, nbEggsMax, eggs);
+
+function BoardEggs(width, height) {
+	common.Board.call(width, height);
+}
+BoardEggs.prototype = new common.Board();
+
+BoardEggs.prototype.resize = function (width, height) {
+	this.tiles = new Array();
+	for (var y = 0; y < height; y++) {
+		this.tiles[y] = new Array();
+		for (var x = 0; x < width; x++) {
+			this.tiles[y][x] = null;
+		}
+	}
+	this.width = width;
+	this.height = height;
+}
+BoardEggs.prototype.dropEgg = function (egg) {
+	this.tiles[egg.y][egg.x] = egg;
+}
+BoardEggs.prototype.hasEgg = function (x, y) {
+	return this.tiles[y][x] != null;
+}
+BoardEggs.prototype.removeEgg = function (egg) {
+	this.tiles[egg.y][egg.x] = null;
+}
+
+var boardEggs = new BoardEggs(0, 0);
 
 function Player(pseudo, x, y) {
 	var id = idPlayer.next();
@@ -145,11 +177,12 @@ function generateBoard(width, height) {
  		[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 	];
+	boardEggs.resize(width, height);
 	return board;
 }
 
 function isWalkable(board, x, y) {
-	return !board.tiles[y][x];
+	return !board.tiles[y][x] && !boardEggs.hasEgg(x, y);
 }
 
 var board = generateBoard(11, 11);
@@ -321,6 +354,9 @@ io.sockets.on('connection', function (socket) {
 			break;
 		case 32: // Space
 			var egg = newEgg(player);
+			if (boardEggs.hasEgg(egg.x, egg.y))
+				break;
+			boardEggs.dropEgg(egg);
 			eggs[egg.id] = egg;
 			// use clearInterval(explosedTimer) to desarm timer
 			var explosedTimer = setTimeout(function () {
@@ -328,6 +364,7 @@ io.sockets.on('connection', function (socket) {
 				var deadPlayers = data["dead"];
 				var walls = data["wall"];
 
+				boardEggs.removeEgg(egg);
 				var message = {"id": egg.id, "zone": data["zone"]};
 				socket.broadcast.emit('eggExplosed', message);
 				socket.emit('eggExplosed', message);
@@ -344,6 +381,11 @@ io.sockets.on('connection', function (socket) {
 					} else {
 						socket.emit("dead", dead.id);
 						socket.broadcast.emit("dead", dead.id);
+
+						delete players[dead.id];
+						if (dead.id == player.id) {
+							delete player;
+						}
 					}
 				});
 				walls.forEach(function (wall) {
@@ -366,11 +408,15 @@ io.sockets.on('connection', function (socket) {
 		}
 	});
 	socket.on('joinParty', function (pseudo) {
-		console.log(pseudo + ' join the party');
 		player = new Player(pseudo, 1, 1, "#ff7700");
-		players.push(player);
-		socket.broadcast.emit('newPlayer', player);
-		socket.emit('youJoin', player);
+		if (player.id != -1) {
+			console.log(pseudo + ' join the party');
+			players.push(player);
+			socket.broadcast.emit('newPlayer', player);
+			socket.emit('youJoin', player);
+		} else {
+			socket.emit('full', null);
+		}
 	});
 	socket.on('disconnect', function () {
 		if (player != null) {

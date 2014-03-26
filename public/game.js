@@ -6,7 +6,7 @@ eggs = new Array();
 myplayer = null;
 boardExplosed = null;
 
-var host = "mfc.lo";
+var host = "192.168.1.59";
 
 function BoardExplosed(width, height) {
 	this.eggExplosed = [
@@ -390,6 +390,20 @@ function connectServer() {
 	ws.on('breakWall', function (wall) {
 		board.tiles[wall.position[0]][wall.position[1]] = 0;
 	});
+	ws.on('dead', function (playerid) {
+		delete players[playerid];
+		if (playerid == myplayer.id) {
+			delete myplayer;
+			var canvas = document.getElementById("boardCanvas");
+			canvas.removeEventListener("keydown", keydown);
+			var joinButton = document.getElementById("joinButton");
+			var join = document.getElementById("join");
+
+			joinButton.disabled = false;
+			join.style.display = "block";
+		}
+		updatePlayersListView();
+	});
 	ws.on('removePlayer', function (playerid) {
 		delete players[playerid];
 		updatePlayersListView();
@@ -400,6 +414,10 @@ function connectServer() {
 		player.score = event["score"];
 		player.showInfo(player.id + 1);
 		updatePlayersListView();
+	});
+	ws.on('full', function (event) {
+		console.log("Serveur full");
+		alert("Le serveur est plein");
 	});
 	ws.on('newPlayer', function (newPlayer) {
 		console.log("New player");
