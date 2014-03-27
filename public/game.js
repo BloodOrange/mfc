@@ -217,7 +217,7 @@ var Graphic = function (canvasName) {
 	this.context = this.canvas.getContext("2d");
 
 	this.erase = function () {
-	console.log("dernier");
+	console.log("dernier ou pas");
 		this.context.fillStyle = "olivedrab";
 		this.context.fillRect(0, 0, this.width, this.height);
 	}
