@@ -559,7 +559,7 @@ function joinParty() {
 function init() {
 	graphic = new Graphic("boardCanvas");
 	graphic.erase();
-	board = new Board(0, 0, "mur.png", "murPaille.png");
+	board = new Board(0, 0, "mur.png", "wood.png");
 	boardExplosed = new BoardExplosed(0, 0);
 board.draw(graphic);
 	connectServer();
