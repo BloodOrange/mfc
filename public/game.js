@@ -299,11 +299,14 @@ function toggleInfo(connected) {
 	if (connected) {
 		overlay.style.display = "none";
 		join.style.display = "block";
-		joinButton.disabled = false;
+		joinButton.style.display = "block";
+		init();
+		
 	} else {
 		overlay.style.display = "block";
 		join.style.display = "none";
-		joinButton.display = true;
+		joinButton.style.display = "none";
+	
 	}
 }
 
@@ -334,6 +337,7 @@ function clearPlayerListView() {
 	head.appendChild(headScore);
 	listPlayers.innerHTML = "";
 	listPlayers.appendChild(head);
+	
 }
 
 function updatePlayersListView() {
@@ -352,7 +356,20 @@ function addMessageChat(message) {
 	chat.appendChild(line);
 	line.innerHTML = message;
 }
+function clearMessageChat() {
+	var parent=document.getElementById("lines");
+	var  childs = document.getElementById("lines").childNodes;
+	 var len = childs.length;
+       
+       for(var i = 0; i < len; i++)
+       {         
+            
 
+                childs[i].innerHTML="";
+
+       }
+
+}
 function update() {
 	players.forEach(function (player) {
 		player.update();
@@ -396,6 +413,7 @@ function connectServer() {
 	ws.on('connect', function () {
 		console.log("Socket opened");
 		toggleInfo(true);
+
 	});
 	ws.on('disconnect', function () {
 		console.log("Socket closed");
@@ -403,6 +421,7 @@ function connectServer() {
 		clearPlayerListView();
 		players = new Array();
 		ws = null;
+		clearMessageChat();
 	});
 	ws.on('initGame', function (gameState) {
 		console.log(gameState);
@@ -478,7 +497,7 @@ function connectServer() {
 		console.log(newPlayer);
 		var joinButton = document.getElementById("joinButton");
 		var join = document.getElementById("join");
-
+		clearMessageChat();
 		joinButton.disabled = false;
 		join.style.display = "none";
 
@@ -562,6 +581,9 @@ function init() {
 	boardExplosed = new BoardExplosed(0, 0);
 board.draw(graphic);
 	connectServer();
+	clearMessageChat();
+	//var line = document.getElementByTagsName("line");
+
 	chatInput = document.getElementById("chatInput");
 	chatInput.addEventListener("keydown", function (event) {
 		if (event.keyCode == 13) {
