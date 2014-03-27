@@ -6,7 +6,7 @@ eggs = new Array();
 myplayer = null;
 boardExplosed = null;
 
-var host = "http://localhost:8004/";
+var host = "http://mfc.nablaweb.info:8004/";
 
 function BoardExplosed(width, height) {
 	this.eggExplosed = [
