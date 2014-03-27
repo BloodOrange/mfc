@@ -193,9 +193,25 @@ function newEgg(owner) {
 
 function generateBoard(width, height) {
 	var board = new Board(width, height);
+<<<<<<< HEAD
 	rand=Math.floor((Math.random()*2));
 	console.log(rand);
 	board.tiles = boards[rand];
+=======
+	board.tiles = [
+		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+		[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+		[1, 0, 0, 2, 0, 2, 0, 2, 0, 0, 1],
+		[1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+		[1, 0, 0, 2, 0, 2, 0, 2, 0, 0, 1],
+		[1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+		[1, 0, 0, 2, 0, 2, 0, 2, 0, 0, 1],
+		[1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+ 		[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+	];
+>>>>>>> 780a1e14765199325197d3319851421a066cdad4
 	boardEggs.resize(width, height);
 	return board;
 }
@@ -452,4 +468,4 @@ io.sockets.on('connection', function (socket) {
 	});
 });
 
-server.listen(8000);
+server.listen(8004);
