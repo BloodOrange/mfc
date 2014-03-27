@@ -23,7 +23,7 @@
 	overflow: hidden;
 }
 #board {
-	width: 640px;
+	width: 704px;
 	height: 704px;
 	position: relative;
 	float: left;
