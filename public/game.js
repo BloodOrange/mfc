@@ -67,7 +67,6 @@ BoardExplosed.prototype.draw = function (graph) {
 			var egg = this.tiles[y][x];
 			if (egg[0] != -1 && egg[1] > 0) {
 				var alpha = parseFloat(egg[1]) / 20.;
-				console.log(alpha);
 				graph.context.globalAlpha = alpha;
 				graph.context.drawImage(this.eggExplosed[egg[0]],
 										x * 64, y * 64);
@@ -414,7 +413,7 @@ function connectServer() {
 	});
 	ws.on('dead', function (playerid) {
 		if (playerid == myplayer.id) {
-			delete myplayer;
+			myplayer = null;
 			var canvas = document.getElementById("boardCanvas");
 			canvas.removeEventListener("keydown", keydown);
 			var joinButton = document.getElementById("joinButton");
