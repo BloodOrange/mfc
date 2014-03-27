@@ -6,7 +6,7 @@ eggs = new Array();
 myplayer = null;
 boardExplosed = null;
 
-var host = "192.168.1.59";
+var host = "10.16.160.19";
 
 function BoardExplosed(width, height) {
 	this.eggExplosed = [
@@ -217,7 +217,7 @@ var Graphic = function (canvasName) {
 	this.context = this.canvas.getContext("2d");
 
 	this.erase = function () {
-	console.log("ici");
+	console.log("là");
 		this.context.fillStyle = "olivedrab";
 		this.context.fillRect(0, 0, this.width, this.height);
 	}
