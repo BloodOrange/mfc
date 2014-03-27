@@ -6,7 +6,7 @@ eggs = new Array();
 myplayer = null;
 boardExplosed = null;
 
-var host = "mfc.ingesup.nablaweb.eu";
+var host = "http://localhost:8004/";
 
 function BoardExplosed(width, height) {
 	this.eggExplosed = [
@@ -30,7 +30,7 @@ function BoardExplosed(width, height) {
 	];
 
 	for (var i = 0; i < this.eggExplosed.length; i++) {
-		this.eggExplosed[i].src = "http://" + host + ":8004/" + eggExplosedSrc[i];
+		this.eggExplosed[i].src = host + eggExplosedSrc[i];
 	}
 
 	common.Board.call(this, width, height);
@@ -112,7 +112,7 @@ function Player (id, pseudo, x, y, color, score, life, imgSrc) {
 	this.state = 0; // 0 - WAITING; 1 - WALKING
 	this.speed = 10;
 	this.img = new Image();
-	var imgSrc = "http://" + host + ":8004/" + imgSrc;
+	var imgSrc = host + imgSrc;
 	this.img.src = imgSrc;
 
 	common.Player.call(this, id, pseudo, x, y, color, score, life, imgSrc);
@@ -225,7 +225,7 @@ var Graphic = function (canvasName) {
 
 function Egg(id, x, y, owner, power) {
 	this.img = new Image();
-	var imgSrc = "http://" + host + ":8004/egg.png";
+	var imgSrc = host + "egg.png";
 	this.img.src = imgSrc;
 	
 	common.Egg.call(this, id, x, y, owner, power);
@@ -371,7 +371,7 @@ function initGame(gameState) {
 function connectServer() {
 	if (ws) return;
 
-	ws = io.connect('http://' + host + ':8004');
+	ws = io.connect(host);
 	ws.on('connect', function () {
 		console.log("Socket opened");
 		toggleInfo(true);
