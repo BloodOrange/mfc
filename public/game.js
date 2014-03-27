@@ -6,7 +6,7 @@ eggs = new Array();
 myplayer = null;
 boardExplosed = null;
 
-var host = "http://mfc.nablaweb.info:8004/";
+var host = "http://localhost:8004/";
 
 function BoardExplosed(width, height) {
 	this.eggExplosed = [
@@ -55,7 +55,7 @@ BoardExplosed.prototype.addExplosedZone = function (zone) {
 	for (var y = 0; y < this.height; y++) {
 		for (var x = 0; x < this.width; x++) {
 			if (zone[y][x] != -1) {
-				this.tiles[y][x] = [zone[y][x], 60];
+				this.tiles[y][x] = [zone[y][x], 20];
 			}
 		}
 	}
@@ -66,6 +66,9 @@ BoardExplosed.prototype.draw = function (graph) {
 		for (var x = 0; x < this.width; x++) {
 			var egg = this.tiles[y][x];
 			if (egg[0] != -1 && egg[1] > 0) {
+				var alpha = parseFloat(egg[1]) / 20.;
+				console.log(alpha);
+				graph.context.globalAlpha = alpha;
 				graph.context.drawImage(this.eggExplosed[egg[0]],
 										x * 64, y * 64);
 		
@@ -79,6 +82,7 @@ BoardExplosed.prototype.draw = function (graph) {
 			}
 		}
 	}
+	graph.context.globalAlpha = 1;
 }
 
 function Board(width, height) {
@@ -233,16 +237,10 @@ function Egg(id, x, y, owner, power) {
 Egg.prototype = new common.Egg();
 
 Egg.prototype.draw = function (graph) {
-	/*graph.context.fillStyle = "white";
-	graph.context.beginPath();
-	graph.context.arc(this.x, this.y, 24, 0, 2 * Math.PI);
-	graph.context.stroke();
-	graph.context.fill();*/
 	graph.context.drawImage(this.img, parseInt(this.x) - 32, parseInt(this.y) - 32);
 		
 	graph.context.stroke();
 	graph.context.fill();
-
 }
 
 function refreshBoard() {
