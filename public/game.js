@@ -85,27 +85,43 @@ BoardExplosed.prototype.draw = function (graph) {
 	graph.context.globalAlpha = 1;
 }
 
-function Board(width, height) {
-	common.Board.call(this, width, height);
+function Board(width, height, imgMurSrc,imgMurCassableSrc) {
+	this.width=width;
+	this.height=height;
+	this.img=new Image();
+	this.imgCassable=new Image();
+	var imgMurSrc=host +  imgMurSrc;
+	var imgMurCassableSrc=host + imgMurCassableSrc;
+	this.img.src=imgMurSrc;
+	console.log(this.img);
+	this.imgCassable.src=imgMurCassableSrc;
+	common.Board.call(this, width, height, imgMurSrc,imgMurCassableSrc);
 }
 Board.prototype = new common.Board();
 
 Board.prototype.draw = function (graph) {
-	/*var image = new Image();
-	  image.src = "file.jpg";
-	  
-	  graph.context.drawImage(image, 50, 50);*/
+
 	for (var y = 0; y < this.height; y++) {
 		for (var x = 0; x < this.width; x++) {
 			if (this.tiles[y][x] == 1) {
-				graph.context.fillStyle = "red";
+				graph.context.drawImage(this.img, parseInt(x)*64, parseInt(y)* 64);
+		
+				graph.context.stroke();
+				graph.context.fill();
+				
 			} else if (this.tiles[y][x] == 2) {
-				graph.context.fillStyle = "blue";
+				graph.context.drawImage(this.imgCassable, parseInt(x)*64, parseInt(y)* 64);
+		
+				graph.context.stroke();
+				graph.context.fill();
+				
 			} else {
 				graph.context.fillStyle = "olivedrab";
+				graph.context.fillRect(x * 64, y * 64, 64, 64);
 			}
-			graph.context.fillRect(x * 64, y * 64, 64, 64);
+			
 		}
+		
 	}
 }
 
@@ -543,9 +559,9 @@ function joinParty() {
 function init() {
 	graphic = new Graphic("boardCanvas");
 	graphic.erase();
-	board = new Board(0, 0);
+	board = new Board(0, 0, "mur.png", "murPaille.png");
 	boardExplosed = new BoardExplosed(0, 0);
-
+board.draw(graphic);
 	connectServer();
 	chatInput = document.getElementById("chatInput");
 	chatInput.addEventListener("keydown", function (event) {

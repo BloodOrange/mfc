@@ -1,8 +1,10 @@
 (function (exports) {
-	exports.Board = function (width, height) {
+		exports.Board = function (width, height, imgMurSrc, imgMurCassable) {
 		this.width = width;
 		this.height = height;
 		this.tiles = null;
+		this.imgMurSrc=imgMurSrc;
+		this.imgMurCassable=imgMurCassable;
 	}
 
 	exports.Player = function (id, pseudo, x, y, color, score, life, imgSrc) {
