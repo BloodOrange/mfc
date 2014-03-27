@@ -122,3 +122,13 @@
 .myplayer {
 	font-weight: bold;
 }
+#chat {
+	font-family: 'Roboto', sans-serif;
+	float: left;
+	margin-left: 20px;
+	margin-top: 20px;
+	width: 300px;
+}
+#chatMessage {
+	display: none;
+}

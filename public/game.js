@@ -330,6 +330,14 @@ function updatePlayersListView() {
 	}
 }
 
+function addMessageChat(message) {
+	var chat = document.getElementById("lines");
+	var line = document.createElement("div");
+	line.setAttribute("class", "line");
+	chat.appendChild(line);
+	line.innerHTML = message;
+}
+
 function update() {
 	players.forEach(function (player) {
 		player.update();
@@ -389,7 +397,6 @@ function connectServer() {
 		board.tiles[wall.position[0]][wall.position[1]] = 0;
 	});
 	ws.on('dead', function (playerid) {
-		delete players[playerid];
 		if (playerid == myplayer.id) {
 			delete myplayer;
 			var canvas = document.getElementById("boardCanvas");
@@ -400,9 +407,13 @@ function connectServer() {
 			joinButton.disabled = false;
 			join.style.display = "block";
 		}
+		addMessageChat("<i><span style='color:" + players[playerid].color + "';>" + players[playerid].pseudo + "</span> est mort !</i>");
+		
+		delete players[playerid];
 		updatePlayersListView();
 	});
 	ws.on('removePlayer', function (playerid) {
+		addMessageChat("<i><span style='color:" + players[playerid].color + "';>" + players[playerid].pseudo + "</span> est parti !</i>");
 		delete players[playerid];
 		updatePlayersListView();
 	});
@@ -428,6 +439,7 @@ function connectServer() {
 		players[player.id] = player;
 		//addPlayerOnListView(player);
 		updatePlayersListView();
+		addMessageChat("<i><span style='color:" + player.color + "';>" + player.pseudo + "</span> a rejoint la partie !</i>");
 	});
 	ws.on('move-to', function (event) {
 		console.log(event);
@@ -440,6 +452,11 @@ function connectServer() {
 		var player = players[event["id"]];
 		player.life = event["life"];
 		player.showInfo(player.id + 1);
+	});
+	ws.on('message', function (content) {
+		var message = content["message"];
+		var player = players[content["id"]];
+		addMessageChat("<b><span style='color:" + player.color + "';>" + player.pseudo + "</span> dit :</b> " + message);
 	});
 	ws.on('youJoin', function (newPlayer) {
 		console.log('You join the game');
@@ -459,6 +476,8 @@ function connectServer() {
 		//addPlayerOnListView(myplayer);
 		updatePlayersListView();
 
+		addMessageChat("<i><span style='color:" + myplayer.color + "';>Vous</span> avez rejoint la partie !</i>");
+		
 		var canvas = document.getElementById("boardCanvas");
 		canvas.tabIndex = 1000;
 		canvas.addEventListener("keydown", keydown, false);
@@ -487,6 +506,13 @@ function connectServer() {
 
 function keydown(e) {
 	switch (e.keyCode) {
+	case 13:        // Return
+		chatMessage = document.getElementById("chatMessage");
+		chatMessage.style.display = "block";
+		chatInput = document.getElementById("chatInput");
+		chatInput.focus();
+		
+		break;
 	case 39:		// Right
 	case 37:		// Left
 	case 38:		// Up
@@ -521,13 +547,26 @@ function init() {
 	boardExplosed = new BoardExplosed(0, 0);
 
 	connectServer();
+	chatInput = document.getElementById("chatInput");
+	chatInput.addEventListener("keydown", function (event) {
+		if (event.keyCode == 13) {
+			if (ws && chatInput.value != "") {
+				ws.emit("message", {"id": myplayer.id, "message": chatInput.value});
+			}
+			chatInput.value = "";
+			var chatMessage = document.getElementById("chatMessage");
+			chatMessage.style.display = "none";
+			var canvas = document.getElementById("boardCanvas");
+			canvas.focus();
+		}
+	}, false);
 	
 	var join = document.getElementById("join");
 	join.addEventListener("submit", function (e) {
 		e.preventDefault();
 		joinParty();
 	}, false);
-
+	
 	var joinButton = document.getElementById("joinButton");
 	joinButton.addEventListener("click", joinParty);
 

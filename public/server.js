@@ -40,8 +40,8 @@ var server = http.createServer(function(req, res) {
 })
 
 var colors = [
-	"#ff0000",
-	"#00ff00",
+	"#D84437",
+	"#0F9D58",
 	"#0000ff",
 	"#ff7700",
 	"#ff0077",
@@ -411,12 +411,16 @@ io.sockets.on('connection', function (socket) {
 		player = new Player(pseudo, 1, 1, "#ff7700");
 		if (player.id != -1) {
 			console.log(pseudo + ' join the party');
-			players.push(player);
+			players[player.id] = player;
 			socket.broadcast.emit('newPlayer', player);
 			socket.emit('youJoin', player);
 		} else {
 			socket.emit('full', null);
 		}
+	});
+	socket.on('message', function (content) {
+		socket.emit('message', content);
+		socket.broadcast.emit('message', content);
 	});
 	socket.on('disconnect', function () {
 		if (player != null) {
