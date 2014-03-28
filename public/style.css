@@ -11,11 +11,11 @@
 #massive {
 	color: #ED9D97;
 }
-#chicken {
+#fry {
 	color: #DB4437;
 	font-weight: bold;
 }
-#fry {
+#chicken {
 	color: #F4B400;
 }
 #container {
@@ -137,4 +137,8 @@
 }
 #chatMessage {
 	display: none;
+}
+#lines {
+	max-height: 400px;
+	overflow: auto;
 }

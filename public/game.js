@@ -354,6 +354,7 @@ function addMessageChat(message) {
 	line.setAttribute("class", "line");
 	chat.appendChild(line);
 	line.innerHTML = message;
+	chat.scrollTop = chat.scrollHeight;
 }
 function clearMessageChat() {
 	var parent=document.getElementById("lines");
