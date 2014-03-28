@@ -96,7 +96,6 @@ function Board(width, height, imgMurSrc,imgMurCassableSrc) {
 	var imgMurSrc=host +  imgMurSrc;
 	var imgMurCassableSrc=host + imgMurCassableSrc;
 	this.img.src=imgMurSrc;
-	console.log(this.img);
 	this.imgCassable.src=imgMurCassableSrc;
 	common.Board.call(this, width, height, imgMurSrc,imgMurCassableSrc);
 }
@@ -240,7 +239,6 @@ var Graphic = function (canvasName) {
 	this.context = this.canvas.getContext("2d");
 
 	this.erase = function () {
-	console.log("dernier ok");
 		this.context.fillStyle = "olivedrab";
 		this.context.fillRect(0, 0, this.width, this.height);
 	}
@@ -385,7 +383,6 @@ function initGame(gameState) {
 		boardExplosed.changeSize(board.width, board.height);
 		//board.draw(graphic);
 	}
-	console.log(board);
 	if (gameState.players) {
 		for (var i = 0; i < gameState.players.length; i++) {
 			var newPlayer = gameState.players[i];
@@ -412,11 +409,11 @@ function connectServer() {
 
 	ws = io.connect(host);
 	ws.on('connect', function () {
-		console.log("Socket opened");
+		//console.log("Socket opened");
 		toggleInfo(true);
 	});
 	ws.on('disconnect', function () {
-		console.log("Socket closed");
+		//console.log("Socket closed");
 		toggleInfo(false);
 		clearPlayerListView();
 		players = new Array();
@@ -424,7 +421,7 @@ function connectServer() {
 		clearMessageChat();
 	});
 	ws.on('initGame', function (gameState) {
-		console.log(gameState);
+		//console.log(gameState);
 		initGame(gameState);
 	});
 	ws.on('breakWall', function (wall) {
@@ -452,18 +449,18 @@ function connectServer() {
 		updatePlayersListView();
 	});
 	ws.on('changeScore', function(event) {
-		console.log(event);
+		//console.log(event);
 		var player = players[event["id"]];
 		player.score = event["score"];
 		player.showInfo(player.id + 1);
 		updatePlayersListView();
 	});
 	ws.on('full', function (event) {
-		console.log("Serveur full");
+		//console.log("Serveur full");
 		alert("Le serveur est plein");
 	});
 	ws.on('newPlayer', function (newPlayer) {
-		console.log("New player");
+		//console.log("New player");
 		//console.log(event.newPlayer);
 		var player = new Player(newPlayer.id, newPlayer.pseudo,
 								newPlayer.x * 64 + 32, newPlayer.y * 64 + 32,
@@ -476,13 +473,13 @@ function connectServer() {
 		addMessageChat("<i><span style='color:" + player.color + "';>" + player.pseudo + "</span> a rejoint la partie !</i>");
 	});
 	ws.on('move-to', function (event) {
-		console.log(event);
+		//console.log(event);
 		var player = players[event.id];
 		player.moveto(event.x * 64 + 32, event.y * 64 + 32);
 	});
 	ws.on('lostLife', function (event) {
-		console.log("Lostlife");
-		console.log(event);
+		//console.log("Lostlife");
+		//console.log(event);
 		var player = players[event["id"]];
 		player.life = event["life"];
 		player.showInfo(player.id + 1);
@@ -493,8 +490,8 @@ function connectServer() {
 		addMessageChat("<b><span style='color:" + player.color + "';>" + player.pseudo + "</span> dit :</b> " + message);
 	});
 	ws.on('youJoin', function (newPlayer) {
-		console.log('You join the game');
-		console.log(newPlayer);
+		//console.log('You join the game');
+		//console.log(newPlayer);
 		var joinButton = document.getElementById("joinButton");
 		var join = document.getElementById("join");
 		joinButton.disabled = false;
@@ -518,19 +515,19 @@ function connectServer() {
 		canvas.focus();
 	});
 	ws.on('newEgg', function (newEgg) {
-		console.log('Oh no, a bomb edd has dropped');
-		console.log(newEgg);
+		//console.log('Oh no, a bomb edd has dropped');
+		//console.log(newEgg);
 		eggs[newEgg.id] = new Egg(newEgg.id, newEgg.x * 64 + 32, newEgg.y * 64 + 32, newEgg.owner, newEgg.power);
 		//eggs[newEgg.id] = newEgg;
 		//eggs[newEgg.id].draw(graphic);
 	});
 	ws.on('eggExplosed', function (event) {
-		console.log('The egg ' + event["id"] + ' has explosed!');
+		//console.log('The egg ' + event["id"] + ' has explosed!');
 		boardExplosed.addExplosedZone(event["zone"]);
 		delete eggs[event["id"]];
 	});
 	ws.on('error', function (e) {
-		console.log("Socket error: " + e);
+		//console.log("Socket error: " + e);
 		toggleInfo(false);
 		clearPlayerListView();
 		players = new Array();
@@ -565,7 +562,7 @@ function keydown(e) {
 		}
 		break;
 	default:
-		console.log("unknown key: " + e.keyCode);
+		//console.log("unknown key: " + e.keyCode);
 	}
 	
 	return true;
@@ -586,9 +583,7 @@ function keyup (e) {
 }
 
 function joinParty() {
-	console.log("je suis ici");
 	if (ws) {
-		console.log("encore là");
 		var login = document.getElementById("login");
 		if (login.value != "") {
 			ws.emit("joinParty", login.value);
