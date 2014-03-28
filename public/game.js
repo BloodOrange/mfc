@@ -439,7 +439,7 @@ function connectServer() {
 			joinButton.disabled = false;
 			join.style.display = "block";
 		}
-		addMessageChat("<i><span style='color:" + players[playerid].color + "';>" + players[playerid].pseudo + "</span> est mort !</i>");
+		addMessageChat("<i><span style='color:" + players[playerid].color + "';>" + players[playerid].pseudo + "</span> est mort avec " + players[playerid].score + " points!</i>");
 		
 		delete players[playerid];
 		updatePlayersListView();
