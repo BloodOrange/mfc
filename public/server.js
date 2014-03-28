@@ -244,7 +244,7 @@ function impactedByEgg(idEgg) {
 					if (players[index].x == egg.x + i && players[index].y == egg.y) {
 						if (dead.indexOf(players[i]) == -1) {
 							dead.push(players[index]);
-							if (index != player.id)
+							if (player && index != player.id)
 								player.score += 10;
 						}
 					}
@@ -273,7 +273,7 @@ function impactedByEgg(idEgg) {
 					if (players[index].x == egg.x - i && players[index].y == egg.y) {
 						if (dead.indexOf(players[i]) == -1)	{
 							dead.push(players[index]);
-							if (index != player.id)
+							if (player && index != player.id)
 								player.score += 10;
 						}
 					}
@@ -302,7 +302,7 @@ function impactedByEgg(idEgg) {
 					if (players[index].x == egg.x && players[index].y == egg.y - i) {
 						if (dead.indexOf(players[i]) == -1)	{
 							dead.push(players[index]);
-							if (index != player.id)
+							if (player && index != player.id)
 								player.score += 10;
 						}
 					}
@@ -331,7 +331,7 @@ function impactedByEgg(idEgg) {
 					if (players[index].x == egg.x && players[index].y == egg.y + i) {
 						if (dead.indexOf(players[i]) == -1)	{
 							dead.push(players[index]);
-							if (index != player.id)
+							if (player && index != player.id)
 								player.score += 10;
 						}
 					}
