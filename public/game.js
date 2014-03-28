@@ -572,7 +572,6 @@ function keydown(e) {
 }
 
 function keyup (e) {
-	console.log("ici");
 	switch (e.keyCode) {
 	case 39:
 	case 37:
