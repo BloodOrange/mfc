@@ -6,6 +6,10 @@ eggs = new Array();
 myplayer = null;
 boardExplosed = null;
 
+var keypressed = [null, 0];
+
+var repeatKey = 7;
+
 var host = window.location.href;
 
 function BoardExplosed(width, height) {
@@ -358,6 +362,16 @@ function clearMessageChat() {
 	parent.innerHTML = "";
 }
 function update() {
+	if (keypressed[0] != null) {
+		keypressed[1] -= 1;
+		if (keypressed[1] == 0) {
+			if (ws) {
+				ws.emit('keypress', keypressed[0]);
+			}
+
+			keypressed[1] = repeatKey;
+		}
+	}
 	players.forEach(function (player) {
 		player.update();
 	});
@@ -500,6 +514,7 @@ function connectServer() {
 		var canvas = document.getElementById("boardCanvas");
 		canvas.tabIndex = 1000;
 		canvas.addEventListener("keydown", keydown, false);
+		canvas.addEventListener("keyup", keyup, false);
 		canvas.focus();
 	});
 	ws.on('newEgg', function (newEgg) {
@@ -536,6 +551,14 @@ function keydown(e) {
 	case 37:		// Left
 	case 38:		// Up
 	case 40:		// Down
+		if (keypressed[0] != e.keyCode) {
+			keypressed[0] = e.keyCode;
+			keypressed[1] = repeatKey;
+			if (ws) {
+				ws.emit('keypress', e.keyCode);
+			}
+		}
+		break;
 	case 32:		// Space
 		if (ws) {
 			ws.emit('keypress', e.keyCode);
@@ -546,6 +569,21 @@ function keydown(e) {
 	}
 	
 	return true;
+}
+
+function keyup (e) {
+	console.log("ici");
+	switch (e.keyCode) {
+	case 39:
+	case 37:
+	case 38:
+	case 40:
+		if (keypressed[0] == e.keyCode) {
+			keypressed[0] = null;
+			keypressed[1] = 0;
+		}
+		break;
+	}
 }
 
 function joinParty() {
@@ -566,7 +604,7 @@ function init() {
 	graphic.erase();
 	board = new Board(0, 0, "mur.png", "wood.png");
 	boardExplosed = new BoardExplosed(0, 0);
-board.draw(graphic);
+	//board.draw(graphic);
 	connectServer();
 
 	chatInput = document.getElementById("chatInput");
