@@ -454,4 +454,4 @@ io.sockets.on('connection', function (socket) {
 	});
 });
 
-server.listen(8004);
+server.listen(80);

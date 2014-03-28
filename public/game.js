@@ -248,7 +248,7 @@ var Graphic = function (canvasName) {
 
 function Egg(id, x, y, owner, power) {
 	this.img = new Image();
-	var imgSrc = host + "egg.png";
+	var imgSrc = host + "oeuf.png";
 	this.img.src = imgSrc;
 	
 	common.Egg.call(this, id, x, y, owner, power);
