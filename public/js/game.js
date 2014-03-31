@@ -34,7 +34,7 @@ function BoardExplosed(width, height) {
 	];
 
 	for (var i = 0; i < this.eggExplosed.length; i++) {
-		this.eggExplosed[i].src = host + eggExplosedSrc[i];
+		this.eggExplosed[i].src = host + 'img/' + eggExplosedSrc[i];
 	}
 
 	common.Board.call(this, width, height);
@@ -93,10 +93,10 @@ function Board(width, height, imgMurSrc,imgMurCassableSrc) {
 	this.height=height;
 	this.img=new Image();
 	this.imgCassable=new Image();
-	var imgMurSrc=host +  imgMurSrc;
-	var imgMurCassableSrc=host + imgMurCassableSrc;
-	this.img.src=imgMurSrc;
-	this.imgCassable.src=imgMurCassableSrc;
+	var imgMurSrc = host + 'img/' + imgMurSrc;
+	var imgMurCassableSrc = host + 'img/' + imgMurCassableSrc;
+	this.img.src = imgMurSrc;
+	this.imgCassable.src = imgMurCassableSrc;
 	common.Board.call(this, width, height, imgMurSrc,imgMurCassableSrc);
 }
 Board.prototype = new common.Board();
@@ -134,7 +134,7 @@ function Player (id, pseudo, x, y, color, score, life, imgSrc) {
 	this.state = 0; // 0 - WAITING; 1 - WALKING
 	this.speed = 10;
 	this.img = new Image();
-	var imgSrc = host + imgSrc;
+	var imgSrc = host + 'img/' + imgSrc;
 	this.img.src = imgSrc;
 
 	common.Player.call(this, id, pseudo, x, y, color, score, life, imgSrc);
@@ -246,7 +246,7 @@ var Graphic = function (canvasName) {
 
 function Egg(id, x, y, owner, power) {
 	this.img = new Image();
-	var imgSrc = host + "oeuf.png";
+	var imgSrc = host + "img/oeuf.png";
 	this.img.src = imgSrc;
 	
 	common.Egg.call(this, id, x, y, owner, power);

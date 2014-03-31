@@ -3,7 +3,7 @@
 var http		= require('http');
 var fs			= require('fs');
 var path		= require('path');
-var common = require('./common');
+var common = require('../public/js/common');
 var Board = common.Board;
 var Egg = common.Egg;
 
@@ -22,15 +22,20 @@ var mime = {
 }
 
 var server = http.createServer(function(req, res) {
-	var filename = path.basename(req.url) || "index.html" ;
-
+	var filename = null;
+	if (req.url == '/')
+		filename = "/index.html";
+	else
+		filename = req.url;
+	
 	var ext=(/[.]/.exec(filename)) ? /[^.]+$/.exec(filename) : undefined;
 
-
-	fs.readFile('./' + filename, 'UTF-8', function(error, content) {
+	console.log('../public' + filename);
+	
+	fs.readFile('../public' + filename, 'UTF-8', function(error, content) {
 		res.writeHead(200, {"Content-Type": mime[ext]});
 		if (ext=='png'){
-			var img = fs.readFileSync('./'+filename);
+			var img = fs.readFileSync('../public'+filename);
 			res.end(img,'binary');
 		}
 		else{
